@@ -232,6 +232,7 @@ node_modules/
 .agents/
 .superpowers/
 .impeccable/
+docs/
 
 PRODUCT.md
 DESIGN.md

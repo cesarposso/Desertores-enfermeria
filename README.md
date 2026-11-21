@@ -94,3 +94,49 @@ La documentación interactiva Swagger estará disponible en:
 python -m pytest tests/ -v
 ```
 *(13 pruebas unitarias e integrales cubriendo dependencias, generación de datos, modelos, base de datos SQLite, esquemas Pydantic y endpoints FastAPI).*
+
+---
+
+## 🖥️ Frontend
+
+### Requisitos
+
+- **Node.js** ≥ 20.19 (`node --version`)
+- **pnpm** ≥ 9 (`pnpm --version`)
+
+### Iniciar el panel web
+
+```bash
+# 1. Iniciar el backend primero (en una terminal aparte)
+uvicorn backend.main:app --reload --port 8000
+
+# 2. Iniciar el servidor de desarrollo del frontend
+cd frontend
+pnpm install      # solo la primera vez
+pnpm run dev
+```
+
+Abre **http://localhost:5173** en el navegador.
+
+### Estructura del frontend
+
+```
+frontend/src/
+├── api/cliente.ts        # Tipos TS + funciones fetch a los 5 endpoints
+├── components/
+│   ├── Sidebar.tsx       # Sidebar (md+) + TopbarMobile (< md)
+│   ├── AvisoEtico.tsx    # Aviso de datos sintéticos — siempre visible
+│   ├── CargandoSpinner.tsx
+│   └── ErrorCartel.tsx
+└── pages/                # 5 secciones: Resumen, Alumnos, Materias, Modelos, Simulador
+```
+
+### Colores de riesgo (sin rojos)
+
+| Nivel | Color | Clase |
+|---|---|---|
+| Alto | Ámbar (#b45309) | `text-riesgo-alto bg-amber-50` |
+| Medio | Pizarra (#475569) | `text-riesgo-medio bg-slate-100` |
+| Bajo | Esmeralda (#059669) | `text-riesgo-bajo bg-emerald-50` |
+
+> ⚠️ Los datos son sintéticos. El resultado es una probabilidad orientadora, nunca para sancionar ni excluir estudiantes.

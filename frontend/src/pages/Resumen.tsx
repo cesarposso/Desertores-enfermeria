@@ -75,7 +75,9 @@ export default function Resumen() {
 
   const pctAlto = totalEstudiantes > 0 ? ((totalAlto / totalEstudiantes) * 100).toFixed(1) : '0'
 
-  const citadosAlto = estudiantes.filter(
+  const totalCitados = estudiantes.filter((e) => e.estado_tutoria === 'citado').length
+  const totalPendientes = totalEstudiantes - totalCitados
+  const citadosPrioritarios = estudiantes.filter(
     (e) => e.nivel_riesgo === 'alto' && e.estado_tutoria === 'citado',
   ).length
 
@@ -191,22 +193,20 @@ export default function Resumen() {
           <p className="mt-2 text-xs text-slate-500">Validado sobre 150 registros sintéticos.</p>
         </div>
 
-        {/* Tarjeta 4: Tutorías Prioritarias */}
+        {/* Tarjeta 4: Gestión de Tutorías */}
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Tutorías Agendadas
+              Gestión de Tutorías
             </span>
             <CalendarCheck className="h-4 w-4 text-slate-600" aria-hidden="true" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-semibold tabular-nums text-slate-800">{citadosAlto}</span>
-            <span className="text-xs text-slate-500 tabular-nums">de {totalAlto} prioritarios</span>
+            <span className="text-3xl font-semibold tabular-nums text-slate-800">{totalCitados}</span>
+            <span className="text-xs text-slate-500 tabular-nums">citados · {totalPendientes} pendientes</span>
           </div>
           <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-            {totalAlto - citadosAlto > 0
-              ? `${totalAlto - citadosAlto} citas preventivas aún pendientes de coordinar.`
-              : 'Todas las citaciones prioritarias están agendadas.'}
+            Prioritarios: <strong className="tabular-nums text-slate-700">{citadosPrioritarios}</strong> de <strong className="tabular-nums text-slate-700">{totalAlto}</strong> convocados a tutoría.
           </p>
         </div>
       </div>

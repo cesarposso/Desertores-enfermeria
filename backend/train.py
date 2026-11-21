@@ -1,9 +1,12 @@
 """Generación de datos sintéticos y pipeline de entrenamiento de Machine Learning.
 
-Entrena y compara 3 modelos (Regresión Logística, Árbol de Decisión y Random Forest)
-mediante validación cruzada estratificada sobre 150 matrículas sintéticas de Enfermería.
+Genera 150 registros sintéticos de matrículas de Enfermería con solapamiento realista,
+casos ambiguos en seguimiento preventivo y variabilidad socioacadémica.
+Entrena y evalúa 3 modelos (Regresión Logística, Árbol de Decisión y Random Forest)
+mediante validación cruzada estratificada (k=5 pliegues).
 """
 
+import sys
 import os
 import json
 from typing import Dict, Any, List
@@ -11,12 +14,14 @@ import numpy as np
 import pandas as pd
 import joblib
 
+# Asegurar que el directorio raíz del proyecto esté en sys.path al ejecutar como script directo
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
 
 
 ASIGNATURAS_ENFERMERIA = [
@@ -44,45 +49,98 @@ FEATURE_COLUMNS = [
 
 
 def generar_dataset_sintetico(n: int = 150, seed: int = 42) -> pd.DataFrame:
-    """Genera 150 registros sintéticos de matrículas de Enfermería con variables realistas."""
+    """Genera n registros sintéticos de estudiantes de Enfermería con solapamiento y casos ambiguos.
+    
+    Modela 3 perfiles latentes (Estable, Ambiguo / Seguimiento preventivo, y Vulnerable)
+    combinados con una función de riesgo latente sigmoide y perturbación estocástica no observable,
+    asegurando que las probabilidades predichas no se polaricen y cubran todo el espectro (bajo, medio y alto).
+    """
     np.random.seed(seed)
-    
     registros: List[Dict[str, Any]] = []
-    
+
     for i in range(1, n + 1):
         codigo = f"ENF-{i:03d}"
-        asig_info = ASIGNATURAS_ENFERMERIA[i % len(ASIGNATURAS_ENFERMERIA)]
+        asig_info = ASIGNATURAS_ENFERMERIA[(i - 1) % len(ASIGNATURAS_ENFERMERIA)]
         asignatura = asig_info["nombre"]
         semestre = asig_info["semestre"]
         carga_base = asig_info["carga_base"]
-        
-        # Probabilidad de pertenecer a perfil en riesgo latente (35% de la cohorte)
-        es_perfil_riesgo = np.random.rand() < 0.35
-        
-        if es_perfil_riesgo:
-            nota_primer_parcial = np.clip(np.random.normal(2.2, 0.5), 1.0, 3.4)
-            promedio_acumulado = np.clip(np.random.normal(2.5, 0.4), 1.5, 3.5)
-            asistencia_pct = np.clip(np.random.normal(68.0, 10.0), 45.0, 85.0)
-            repitente = int(np.random.rand() < 0.55)
-            carga_percibida = np.clip(np.random.normal(carga_base + 0.3, 0.4), 3.0, 5.0)
-            horas_estudio_semana = np.clip(np.random.normal(6.0, 3.0), 1.0, 15.0)
-            horas_sueno = np.clip(np.random.normal(5.0, 1.0), 3.5, 7.5)
-            apoyo_economico_familiar = int(np.random.rand() < 0.30)
-            trabajo_remunerado = int(np.random.rand() < 0.70)
-            intencion_seguir = int(np.random.rand() < 0.40)
-            riesgo_real = 1
-        else:
-            nota_primer_parcial = np.clip(np.random.normal(3.8, 0.6), 2.8, 5.0)
-            promedio_acumulado = np.clip(np.random.normal(3.9, 0.5), 3.0, 5.0)
-            asistencia_pct = np.clip(np.random.normal(90.0, 6.0), 75.0, 100.0)
+
+        # Distribución de perfiles socioacadémicos en la cohorte:
+        # - Estable (~40%): factores protectores dominantes
+        # - Ambiguo / Seguimiento preventivo (~38%): factores mixtos y frontera
+        # - Vulnerable (~22%): múltiples sobrecargas y factores de riesgo
+        perfil = np.random.choice(["estable", "ambiguo", "vulnerable"], p=[0.40, 0.38, 0.22])
+
+        if perfil == "estable":
+            nota_primer_parcial = np.clip(np.random.normal(3.8, 0.5), 2.5, 5.0)
+            promedio_acumulado = np.clip(np.random.normal(3.9, 0.4), 2.8, 5.0)
+            asistencia_pct = np.clip(np.random.normal(89.0, 6.0), 72.0, 100.0)
             repitente = int(np.random.rand() < 0.12)
-            carga_percibida = np.clip(np.random.normal(carga_base - 0.4, 0.5), 1.5, 4.2)
-            horas_estudio_semana = np.clip(np.random.normal(16.0, 5.0), 8.0, 35.0)
-            horas_sueno = np.clip(np.random.normal(7.0, 1.0), 5.5, 9.5)
+            carga_percibida = np.clip(np.random.normal(carga_base - 0.4, 0.5), 1.5, 4.4)
+            horas_estudio_semana = np.clip(np.random.normal(15.0, 4.0), 8.0, 35.0)
+            horas_sueno = np.clip(np.random.normal(7.1, 0.8), 5.5, 9.5)
             apoyo_economico_familiar = int(np.random.rand() < 0.85)
-            trabajo_remunerado = int(np.random.rand() < 0.25)
+            trabajo_remunerado = int(np.random.rand() < 0.22)
             intencion_seguir = int(np.random.rand() < 0.92)
-            riesgo_real = 0
+
+        elif perfil == "ambiguo":
+            # Casos limítrofes / ambiguos: notas moderadas, sobrecarga media-alta, asistencia en frontera
+            nota_primer_parcial = np.clip(np.random.normal(3.1, 0.55), 1.8, 4.3)
+            promedio_acumulado = np.clip(np.random.normal(3.2, 0.45), 2.0, 4.3)
+            asistencia_pct = np.clip(np.random.normal(77.0, 8.0), 55.0, 92.0)
+            repitente = int(np.random.rand() < 0.38)
+            carga_percibida = np.clip(np.random.normal(carga_base, 0.5), 2.5, 5.0)
+            horas_estudio_semana = np.clip(np.random.normal(11.0, 3.5), 4.0, 22.0)
+            horas_sueno = np.clip(np.random.normal(6.0, 1.0), 4.0, 8.0)
+            apoyo_economico_familiar = int(np.random.rand() < 0.55)
+            trabajo_remunerado = int(np.random.rand() < 0.48)
+            intencion_seguir = int(np.random.rand() < 0.68)
+
+        else:  # vulnerable
+            nota_primer_parcial = np.clip(np.random.normal(2.3, 0.5), 1.0, 3.5)
+            promedio_acumulado = np.clip(np.random.normal(2.5, 0.4), 1.4, 3.6)
+            asistencia_pct = np.clip(np.random.normal(66.0, 9.5), 40.0, 85.0)
+            repitente = int(np.random.rand() < 0.65)
+            carga_percibida = np.clip(np.random.normal(carga_base + 0.3, 0.4), 3.0, 5.0)
+            horas_estudio_semana = np.clip(np.random.normal(7.0, 2.5), 1.0, 16.0)
+            horas_sueno = np.clip(np.random.normal(5.0, 0.9), 3.5, 7.0)
+            apoyo_economico_familiar = int(np.random.rand() < 0.25)
+            trabajo_remunerado = int(np.random.rand() < 0.75)
+            intencion_seguir = int(np.random.rand() < 0.35)
+
+        # Modelado de riesgo multifactorial no lineal con interacciones pedagógicas:
+        # 1. Rendimiento deficiente e impacto agravado por repitencia
+        riesgo_score = 0.0
+        if promedio_acumulado < 3.0:
+            riesgo_score += 1.6 if repitente == 1 else 0.9
+        elif promedio_acumulado > 3.7:
+            riesgo_score -= 1.3
+
+        # 2. Inasistencia crítica y conflicto con actividad laboral
+        if asistencia_pct < 75.0:
+            riesgo_score += 1.3
+            if trabajo_remunerado == 1:
+                riesgo_score += 1.0
+        elif asistencia_pct > 88.0:
+            riesgo_score -= 0.9
+
+        # 3. Factor socioeconómico y vocacional (red protectora vs desmotivación)
+        if intencion_seguir == 0:
+            riesgo_score += 1.4
+        if apoyo_economico_familiar == 0:
+            riesgo_score += 0.9
+        elif apoyo_economico_familiar == 1 and intencion_seguir == 1:
+            riesgo_score -= 0.9
+
+        # 4. Sobrecarga percibida combinada con privación de descanso
+        if carga_percibida >= 4.2 and horas_sueno < 6.0:
+            riesgo_score += 1.0
+
+        # Perturbación estocástica no observable (variabilidad individual y contextual)
+        riesgo_score += np.random.normal(0, 0.75)
+
+        prob_latente = 1.0 / (1.0 + np.exp(-riesgo_score))
+        riesgo_real = int(np.random.rand() < prob_latente)
 
         registros.append({
             "codigo_estudiante": codigo,
@@ -117,8 +175,8 @@ def entrenar_y_evaluar_modelos(df: pd.DataFrame, output_dir: str = "backend/data
     
     modelos = {
         "regresion_logistica": LogisticRegression(max_iter=1000, random_state=42),
-        "arbol_decision": DecisionTreeClassifier(max_depth=4, min_samples_leaf=3, random_state=42),
-        "bosque_aleatorio": RandomForestClassifier(n_estimators=60, max_depth=5, min_samples_leaf=2, random_state=42)
+        "arbol_decision": DecisionTreeClassifier(max_depth=4, min_samples_leaf=4, random_state=42),
+        "bosque_aleatorio": RandomForestClassifier(n_estimators=100, max_depth=5, min_samples_leaf=2, random_state=42)
     }
     
     metricas_resumen: Dict[str, Any] = {}
@@ -186,7 +244,6 @@ def entrenar_y_evaluar_modelos(df: pd.DataFrame, output_dir: str = "backend/data
             "asistencia_promedio_pct": round(float(group["asistencia_pct"].mean()), 1),
             "horas_estudio_promedio": round(float(group["horas_estudio_semana"].mean()), 1)
         })
-    # Ordenar por carga promedio desc
     resumen_materias.sort(key=lambda m: m["carga_promedio"], reverse=True)
     carga_path = os.path.join(output_dir, "carga_materias.json")
     with open(carga_path, "w", encoding="utf-8") as f:
@@ -196,9 +253,18 @@ def entrenar_y_evaluar_modelos(df: pd.DataFrame, output_dir: str = "backend/data
 
 
 if __name__ == "__main__":
-    print("Generando dataset sintético y entrenando modelos...")
+    print("Generando dataset sintético con casos ambiguos y solapamiento...")
     df_sintetico = generar_dataset_sintetico(n=150, seed=42)
     resultados = entrenar_y_evaluar_modelos(df_sintetico, output_dir="backend/data")
     print(f"Mejor modelo: {resultados['mejor_modelo']}")
-    print(f"F1-Score: {resultados[resultados['mejor_modelo']]['f1']['mean']:.4f}")
+    print(f"F1-Score medio: {resultados[resultados['mejor_modelo']]['f1']['mean']:.4f}")
+    print(f"AUC-ROC medio: {resultados[resultados['mejor_modelo']]['roc_auc']['mean']:.4f}")
+    
+    # Re-sembrar la base de datos SQLite con los nuevos estudiantes y predicciones
+    from backend.db import init_db
+    db_path = os.path.join("backend", "data", "database.sqlite")
+    dataset_path = os.path.join("backend", "data", "dataset_sintetico.csv")
+    model_path = os.path.join("backend", "data", "mejor_modelo.joblib")
+    init_db(db_path=db_path, dataset_path=dataset_path, model_bundle_path=model_path, force_reseed=True)
+    print("Base de datos SQLite actualizada con las nuevas probabilidades.")
     print("Artefactos guardados con éxito en backend/data/")

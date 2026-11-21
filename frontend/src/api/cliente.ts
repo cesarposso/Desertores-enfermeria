@@ -3,6 +3,33 @@
 
 const BASE_URL = 'http://localhost:8000'
 
+// ── Paleta de Colores Centralizada (Universidad de Pamplona + Riesgos) ──────
+
+export const COLORES_TEMA = {
+  unipamplona: {
+    rojo: '#AD3333',
+    rojoDark: '#8F2424',
+    rojoLight: '#FDF2F2',
+    dorado: '#EBB21C',
+    superficie: '#F0F0F0',
+    texto: '#1F2937',
+    textoSecundario: '#64748B',
+    borde: '#E2E8F0',
+    grid: '#F1F5F9',
+    blanco: '#FFFFFF',
+  },
+  riesgo: {
+    alto: '#C25E00',    // Ámbar profundo / ocre (nunca rojo institucional #AD3333)
+    medio: '#475569',   // Azul pizarra
+    bajo: '#059669',    // Esmeralda
+  },
+  modelos: {
+    bosque: '#AD3333',         // Rojo institucional para el modelo recomendado
+    regresion: '#475569',      // Pizarra
+    arbol: '#94A3B8',          // Gris neutro
+  },
+} as const
+
 // ── Tipos ──────────────────────────────────────────────────────────────────
 
 export type NivelRiesgo = 'alto' | 'medio' | 'bajo'
@@ -159,14 +186,14 @@ export async function simularRiesgo(input: SimuladorInput): Promise<SimuladorOut
 // ── Helpers de UI ──────────────────────────────────────────────────────────
 
 /** Devuelve clases Tailwind de texto, fondo y borde según nivel de riesgo.
- *  Nunca incluye clases con "red-". */
+ *  Nunca incluye clases rojas institucionales para no confundir alerta con marca. */
 export function nivelRiesgoClase(nivel: NivelRiesgo): string {
   const mapa: Record<NivelRiesgo, string> = {
-    alto: 'text-riesgo-alto bg-amber-50 border-amber-300',
-    medio: 'text-riesgo-medio bg-slate-100 border-slate-300',
-    bajo: 'text-riesgo-bajo bg-emerald-50 border-emerald-300',
+    alto: 'text-amber-900 bg-amber-50 border-amber-300',
+    medio: 'text-slate-700 bg-slate-100 border-slate-300',
+    bajo: 'text-emerald-800 bg-emerald-50 border-emerald-300',
   }
-  return mapa[nivel] || 'text-slate-600 bg-slate-100 border-slate-300'
+  return mapa[nivel] || 'text-slate-700 bg-slate-100 border-slate-300'
 }
 
 /** Etiqueta legible para el nivel de riesgo (no alarmista). */

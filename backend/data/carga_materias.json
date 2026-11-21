@@ -1,56 +1,56 @@
 [
   {
-    "asignatura": "Fisiología Humana",
-    "semestre": 2,
-    "estudiantes_matriculados": 25,
-    "carga_promedio": 4.44,
-    "tasa_riesgo_pct": 48.0,
-    "asistencia_promedio_pct": 78.0,
-    "horas_estudio_promedio": 11.5
-  },
-  {
     "asignatura": "Farmacología Clínica",
     "semestre": 4,
     "estudiantes_matriculados": 25,
-    "carga_promedio": 4.36,
-    "tasa_riesgo_pct": 32.0,
-    "asistencia_promedio_pct": 84.8,
-    "horas_estudio_promedio": 12.5
+    "carga_promedio": 4.47,
+    "tasa_riesgo_pct": 52.0,
+    "asistencia_promedio_pct": 80.9,
+    "horas_estudio_promedio": 11.5
+  },
+  {
+    "asignatura": "Fisiología Humana",
+    "semestre": 2,
+    "estudiantes_matriculados": 25,
+    "carga_promedio": 4.43,
+    "tasa_riesgo_pct": 60.0,
+    "asistencia_promedio_pct": 81.8,
+    "horas_estudio_promedio": 13.7
   },
   {
     "asignatura": "Anatomía Humana",
     "semestre": 1,
     "estudiantes_matriculados": 25,
-    "carga_promedio": 4.24,
-    "tasa_riesgo_pct": 36.0,
-    "asistencia_promedio_pct": 82.5,
-    "horas_estudio_promedio": 11.4
+    "carga_promedio": 4.42,
+    "tasa_riesgo_pct": 56.0,
+    "asistencia_promedio_pct": 80.6,
+    "horas_estudio_promedio": 11.5
   },
   {
     "asignatura": "Bioquímica Médica",
     "semestre": 2,
     "estudiantes_matriculados": 25,
-    "carga_promedio": 4.13,
-    "tasa_riesgo_pct": 44.0,
-    "asistencia_promedio_pct": 78.8,
-    "horas_estudio_promedio": 10.2
+    "carga_promedio": 4.19,
+    "tasa_riesgo_pct": 68.0,
+    "asistencia_promedio_pct": 75.9,
+    "horas_estudio_promedio": 11.2
   },
   {
     "asignatura": "Microbiología y Parasitología",
     "semestre": 3,
     "estudiantes_matriculados": 25,
-    "carga_promedio": 3.84,
-    "tasa_riesgo_pct": 28.0,
-    "asistencia_promedio_pct": 86.2,
-    "horas_estudio_promedio": 14.9
+    "carga_promedio": 3.93,
+    "tasa_riesgo_pct": 52.0,
+    "asistencia_promedio_pct": 79.0,
+    "horas_estudio_promedio": 11.0
   },
   {
     "asignatura": "Cuidado Básico de Enfermería",
     "semestre": 3,
     "estudiantes_matriculados": 25,
-    "carga_promedio": 3.81,
-    "tasa_riesgo_pct": 48.0,
-    "asistencia_promedio_pct": 79.3,
-    "horas_estudio_promedio": 10.5
+    "carga_promedio": 3.6,
+    "tasa_riesgo_pct": 56.0,
+    "asistencia_promedio_pct": 80.8,
+    "horas_estudio_promedio": 13.2
   }
 ]

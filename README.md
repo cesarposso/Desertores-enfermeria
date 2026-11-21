@@ -36,6 +36,32 @@ El panel está diseñado para uso de docentes y tutores de Enfermería. Su objet
 
 ---
 
+## 🧪 Metodología de Generación de Datos Sintéticos y Calibración
+
+Para evitar un problema artificialmente trivial (clasificadores con 100% F1 sin casos intermedios), el generador en `backend/train.py` modela la complejidad real del entorno universitario:
+
+1. **Tres perfiles socioacadémicos latentes:**
+   - **Estable (~42%):** Factores protectores predominantes (promedio acumulado y parcial $\ge 3.5$, asistencia $\ge 85\%$, soporte familiar, intención firme).
+   - **Ambiguo / Seguimiento preventivo (~36%):** Casos limítrofes con señales mixtas (promedios entre $2.8$ y $3.5$, asistencia entre $65\%$ y $80\%$, sobrecarga moderada, coexistencia de estudio y trabajo). Permiten poblar la franja intermedia de prevención docente.
+   - **Vulnerable (~22%):** Múltiples factores de alerta concurrentes (bajo rendimiento temprano, repitencia, inasistencia acumulada, falta de soporte socioeconómico).
+
+2. **Interacciones no lineales y factores compuestos:**
+   El riesgo de abandono no responde a una suma lineal aislada. Se modelan interacciones críticas pedagógicas:
+   - *Repitencia agravada por rendimiento inicial bajo:* Impacto multiplicativo cuando el estudiante repite y su primer parcial no supera 3.0.
+   - *Sobrecarga académica con actividad laboral:* Mayor presión cuando la carga percibida es $\ge 4.0$ y el estudiante tiene trabajo remunerado.
+   - *Vulnerabilidad socio-vocacional:* Asociación crítica entre ausencia de red de apoyo familiar e indecisión vocacional.
+   - *Fatiga acumulada:* Interacción entre sobrecarga extrema y privación de descanso nocturno ($< 6$ horas).
+
+3. **Solapamiento estocástico:**
+   Se incorpora una perturbación normal $\epsilon \sim \mathcal{N}(0, 0.75)$ que representa factores humanos no medibles en el sistema (situaciones imprevistas, salud mental, resiliencia individual). La deserción se muestrea estocásticamente $y \sim \text{Bernoulli}(\sigma(z))$, lo que genera solapamiento natural entre clases y evita probabilidades polarizadas exclusivamente en 0% o 100%.
+
+4. **Calibración de umbrales en 3 niveles no alarmistas:**
+   - **Acompañamiento prioritario (`alto`, $\ge 60.0\%$):** 82 estudiantes (54.7%). Requiere citación prioritaria a tutoría académica o consejería.
+   - **Seguimiento preventivo (`medio`, $35.0\% \le p < 60.0\%$):** 17 estudiantes (11.3%). Población clave en riesgo emergente para talleres de refuerzo y monitoreo formativo.
+   - **Situación estable (`bajo`, $< 35.0\%$):** 51 estudiantes (34.0%). Monitoreo docente estándar sin alertas inmediatas.
+
+---
+
 ## 🧠 Modelos de Machine Learning y Explicabilidad
 
 Se comparan 3 modelos entrenados con **validación cruzada estratificada ($k=5$)**:

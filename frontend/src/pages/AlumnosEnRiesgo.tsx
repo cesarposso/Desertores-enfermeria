@@ -119,7 +119,6 @@ export default function AlumnosEnRiesgo() {
     setDrawerAbierto(false)
     setEstudianteSeleccionado(null)
     setMensajeExito(null)
-    // Devolver foco al botón activador de forma accesible
     setTimeout(() => {
       botonActivadorRef.current?.focus()
     }, 50)
@@ -132,7 +131,6 @@ export default function AlumnosEnRiesgo() {
     const elementoActual = drawerRef.current
     if (!elementoActual) return
 
-    // Poner foco en el botón de cerrar al abrir
     setTimeout(() => {
       botonCerrarRef.current?.focus()
     }, 50)
@@ -228,7 +226,7 @@ export default function AlumnosEnRiesgo() {
       <div>
         <h1 className="text-2xl font-semibold text-slate-800">Alumnos en Riesgo</h1>
         <p className="text-sm text-slate-600 mt-1">
-          Monitoreo orientador de estudiantes priorizados para citación temprana a tutoría pedagógica.
+          Monitoreo orientador de estudiantes priorizados para citación temprana a tutoría pedagógica · Universidad de Pamplona.
         </p>
       </div>
 
@@ -265,7 +263,7 @@ export default function AlumnosEnRiesgo() {
             <select
               value={filtroAsignatura}
               onChange={(e) => setFiltroAsignatura(e.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
             >
               <option value="">Todas las asignaturas</option>
               {asignaturasDisponibles.map((asig) => (
@@ -282,7 +280,7 @@ export default function AlumnosEnRiesgo() {
             <select
               value={filtroNivel}
               onChange={(e) => setFiltroNivel(e.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
             >
               <option value="">Todos los niveles</option>
               <option value="alto">Acompañamiento prioritario</option>
@@ -297,7 +295,7 @@ export default function AlumnosEnRiesgo() {
             <select
               value={filtroTutoria}
               onChange={(e) => setFiltroTutoria(e.target.value)}
-              className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
             >
               <option value="">Todos los estados</option>
               <option value="pendiente">Pendiente de citación</option>
@@ -332,7 +330,7 @@ export default function AlumnosEnRiesgo() {
           </p>
           <button
             onClick={limpiarFiltros}
-            className="mt-4 rounded bg-slate-800 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
+            className="mt-4 rounded bg-unipamplona-rojo px-4 py-1.5 text-xs font-medium text-white transition hover:bg-unipamplona-rojo-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado"
           >
             Restablecer todos los filtros
           </button>
@@ -408,14 +406,14 @@ export default function AlumnosEnRiesgo() {
                       )}
                     </td>
 
-                    {/* Botón Acción */}
+                    {/* Botón Acción con estilo institucional */}
                     <td className="px-4 py-3 text-right whitespace-nowrap">
                       <button
                         onClick={(e) => abrirDrawer(est, e)}
-                        className={`rounded px-3 py-1.5 text-xs font-medium transition ${
+                        className={`rounded px-3 py-1.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado ${
                           est.estado_tutoria === 'citado'
                             ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
-                            : 'bg-slate-800 text-white hover:bg-slate-700'
+                            : 'bg-unipamplona-rojo text-white hover:bg-unipamplona-rojo-dark shadow-2xs'
                         }`}
                       >
                         {est.estado_tutoria === 'citado' ? 'Ver Ficha' : 'Citar a tutoría'}
@@ -475,7 +473,7 @@ export default function AlumnosEnRiesgo() {
 
                   <button
                     onClick={(e) => abrirDrawer(est, e)}
-                    className="rounded bg-slate-800 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-slate-700"
+                    className="rounded bg-unipamplona-rojo px-3 py-1.5 text-xs font-medium text-white transition hover:bg-unipamplona-rojo-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado shadow-2xs"
                   >
                     {est.estado_tutoria === 'citado' ? 'Ver Ficha' : 'Citar a tutoría'}
                   </button>
@@ -543,7 +541,7 @@ export default function AlumnosEnRiesgo() {
             className="relative z-10 flex h-full w-full sm:max-w-md flex-col bg-white shadow-2xl overflow-y-auto"
           >
             {/* Cabecera del Drawer */}
-            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-unipamplona-superficie px-5 py-4">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Ficha de Acompañamiento Formativo
@@ -560,7 +558,7 @@ export default function AlumnosEnRiesgo() {
                 ref={botonCerrarRef}
                 onClick={cerrarDrawer}
                 aria-label="Cerrar ficha del estudiante"
-                className="rounded-md p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition"
+                className="rounded-md p-1.5 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -593,12 +591,12 @@ export default function AlumnosEnRiesgo() {
                   <span className="text-xs text-slate-500">de probabilidad estimada</span>
                 </div>
 
-                {/* Barra de progreso visual */}
+                {/* Barra de progreso visual con colores suaves de alerta */}
                 <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden">
                   <div
                     className={`h-full ${
                       estudianteSeleccionado.nivel_riesgo === 'alto'
-                        ? 'bg-amber-700'
+                        ? 'bg-amber-600'
                         : estudianteSeleccionado.nivel_riesgo === 'medio'
                         ? 'bg-slate-600'
                         : 'bg-emerald-600'
@@ -640,7 +638,7 @@ export default function AlumnosEnRiesgo() {
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
                           <div
-                            className="h-full bg-amber-700 rounded-full"
+                            className="h-full bg-amber-600 rounded-full"
                             style={{ width: `${Math.min(100, Math.max(5, f.impacto_pct))}%` }}
                           />
                         </div>
@@ -657,7 +655,7 @@ export default function AlumnosEnRiesgo() {
               {/* Sección de Citación a Tutoría */}
               <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
                 <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <Calendar className="h-4 w-4 text-slate-700" />
+                  <Calendar className="h-4 w-4 text-unipamplona-rojo" />
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                     Acción de Acompañamiento
                   </h3>
@@ -669,7 +667,7 @@ export default function AlumnosEnRiesgo() {
                     {estudianteSeleccionado.estado_tutoria}
                   </strong>
                   {estudianteSeleccionado.fecha_tutoria && (
-                    <span className="block mt-0.5 text-emerald-800">
+                    <span className="block mt-0.5 text-emerald-800 font-medium">
                       Fecha programada:{' '}
                       <strong className="tabular-nums">{estudianteSeleccionado.fecha_tutoria}</strong>
                     </span>
@@ -684,7 +682,7 @@ export default function AlumnosEnRiesgo() {
                     type="date"
                     value={fechaTutoria}
                     onChange={(e) => setFechaTutoria(e.target.value)}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-slate-500 focus:outline-none"
+                    className="w-full rounded border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                   />
                 </div>
 
@@ -698,7 +696,7 @@ export default function AlumnosEnRiesgo() {
                 <button
                   onClick={handleGuardarTutoria}
                   disabled={guardandoTutoria}
-                  className="w-full rounded bg-slate-800 py-2 px-4 text-xs font-medium text-white transition hover:bg-slate-700 disabled:opacity-50"
+                  className="w-full rounded bg-unipamplona-rojo py-2 px-4 text-xs font-medium text-white transition hover:bg-unipamplona-rojo-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado disabled:opacity-50 shadow-2xs"
                 >
                   {guardandoTutoria
                     ? 'Guardando citación...'
@@ -710,10 +708,10 @@ export default function AlumnosEnRiesgo() {
             </div>
 
             {/* Pie del Drawer */}
-            <div className="border-t border-slate-200 bg-slate-50 px-5 py-3 flex justify-end">
+            <div className="border-t border-slate-200 bg-unipamplona-superficie px-5 py-3 flex justify-end">
               <button
                 onClick={cerrarDrawer}
-                className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 transition"
+                className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado"
               >
                 Cerrar Ficha
               </button>

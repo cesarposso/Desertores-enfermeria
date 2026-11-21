@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   simularRiesgo,
   nivelRiesgoClase,
@@ -12,6 +12,7 @@ import type {
 import CargandoSpinner from '../components/CargandoSpinner'
 import ErrorCartel from '../components/ErrorCartel'
 import AvisoEtico from '../components/AvisoEtico'
+import NotasPorCorte from '../components/NotasPorCorte'
 import {
   Calculator,
   RotateCcw,
@@ -52,6 +53,32 @@ export default function Simulador() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [resultado, setResultado] = useState<SimuladorOutput | null>(null)
+
+  // Control de pestañas accesibles (WAI-ARIA)
+  const [tabActiva, setTabActiva] = useState<'riesgo' | 'notas'>('riesgo')
+  const tabRiesgoRef = useRef<HTMLButtonElement>(null)
+  const tabNotasRef = useRef<HTMLButtonElement>(null)
+
+  const handleTabKeyDown = (e: React.KeyboardEvent, tabActual: 'riesgo' | 'notas') => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault()
+      if (tabActual === 'riesgo') {
+        setTabActiva('notas')
+        tabNotasRef.current?.focus()
+      } else {
+        setTabActiva('riesgo')
+        tabRiesgoRef.current?.focus()
+      }
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      setTabActiva('riesgo')
+      tabRiesgoRef.current?.focus()
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      setTabActiva('notas')
+      tabNotasRef.current?.focus()
+    }
+  }
 
   const actualizarCampo = <K extends keyof SimuladorInput>(
     campo: K,
@@ -118,12 +145,69 @@ export default function Simulador() {
         </h1>
         <p className="text-sm text-slate-600 mt-1">
           Ajuste las 11 variables socioacadémicas para estimar la probabilidad orientadora de deserción y
-          descomponer los factores que más inciden en el estudiante.
+          descomponer los factores que más inciden en el estudiante · Universidad de Pamplona.
         </p>
       </div>
 
-      {/* Layout de 2 columnas: Formulario y Panel de Resultados */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
+      {/* Pestañas de Navegación Accesibles (WAI-ARIA: tablist / tab / tabpanel con navegación por flechas) */}
+      <div className="border-b border-slate-200">
+        <div
+          role="tablist"
+          aria-label="Herramientas del Simulador Académico"
+          className="-mb-px flex space-x-6"
+        >
+          <button
+            ref={tabRiesgoRef}
+            id="tab-riesgo"
+            type="button"
+            role="tab"
+            aria-selected={tabActiva === 'riesgo'}
+            aria-controls="panel-riesgo"
+            tabIndex={tabActiva === 'riesgo' ? 0 : -1}
+            onClick={() => setTabActiva('riesgo')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'riesgo')}
+            className={`inline-flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado ${
+              tabActiva === 'riesgo'
+                ? 'border-unipamplona-rojo text-unipamplona-rojo font-semibold'
+                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
+            }`}
+          >
+            <Activity className="h-4 w-4" />
+            Simulador de Riesgo ML
+          </button>
+
+          <button
+            ref={tabNotasRef}
+            id="tab-notas"
+            type="button"
+            role="tab"
+            aria-selected={tabActiva === 'notas'}
+            aria-controls="panel-notas"
+            tabIndex={tabActiva === 'notas' ? 0 : -1}
+            onClick={() => setTabActiva('notas')}
+            onKeyDown={(e) => handleTabKeyDown(e, 'notas')}
+            className={`inline-flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado ${
+              tabActiva === 'notas'
+                ? 'border-unipamplona-rojo text-unipamplona-rojo font-semibold'
+                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
+            }`}
+          >
+            <Calculator className="h-4 w-4" />
+            Notas por Corte
+          </button>
+        </div>
+      </div>
+
+      {/* Contenido de Pestaña 1: Simulador de Riesgo ML */}
+      <div
+        id="panel-riesgo"
+        role="tabpanel"
+        aria-labelledby="tab-riesgo"
+        hidden={tabActiva !== 'riesgo'}
+        className={tabActiva !== 'riesgo' ? 'hidden' : 'space-y-6'}
+      >
+        {/* Layout de 2 columnas: Formulario y Panel de Resultados */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
         {/* Columna Izquierda: Formulario (7 columnas en desktop) */}
         <form
           onSubmit={handleSimular}
@@ -132,7 +216,7 @@ export default function Simulador() {
           {/* Dimensión 1: Datos Curriculares y Calificaciones */}
           <div>
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <BookOpen className="h-4 w-4 text-slate-700" />
+              <BookOpen className="h-4 w-4 text-unipamplona-rojo" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
                 1. Dimensión Académica y Asignatura
               </h2>
@@ -147,7 +231,7 @@ export default function Simulador() {
                 <select
                   value={valores.asignatura}
                   onChange={(e) => actualizarCampo('asignatura', e.target.value)}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 >
                   {ASIGNATURAS.map((asig) => (
                     <option key={asig} value={asig}>
@@ -168,7 +252,7 @@ export default function Simulador() {
                   max="10"
                   value={valores.semestre}
                   onChange={(e) => actualizarCampo('semestre', parseInt(e.target.value) || 1)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 />
                 {erroresValidacion.semestre && (
                   <p className="mt-1 text-xs text-amber-700">{erroresValidacion.semestre}</p>
@@ -183,7 +267,7 @@ export default function Simulador() {
                 <select
                   value={valores.repitente}
                   onChange={(e) => actualizarCampo('repitente', parseInt(e.target.value))}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 >
                   <option value={0}>No (Primera matrícula)</option>
                   <option value={1}>Sí (Repitente)</option>
@@ -204,7 +288,7 @@ export default function Simulador() {
                   onChange={(e) =>
                     actualizarCampo('nota_primer_parcial', parseFloat(e.target.value) || 0)
                   }
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 />
                 {erroresValidacion.nota_primer_parcial && (
                   <p className="mt-1 text-xs text-amber-700">{erroresValidacion.nota_primer_parcial}</p>
@@ -225,7 +309,7 @@ export default function Simulador() {
                   onChange={(e) =>
                     actualizarCampo('promedio_acumulado_cortes', parseFloat(e.target.value) || 0)
                   }
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 />
                 {erroresValidacion.promedio_acumulado_cortes && (
                   <p className="mt-1 text-xs text-amber-700">
@@ -251,7 +335,7 @@ export default function Simulador() {
                   step="1"
                   value={valores.asistencia_pct}
                   onChange={(e) => actualizarCampo('asistencia_pct', parseInt(e.target.value) || 0)}
-                  className="w-full accent-slate-700"
+                  className="w-full accent-unipamplona-rojo"
                 />
               </div>
             </div>
@@ -260,7 +344,7 @@ export default function Simulador() {
           {/* Dimensión 2: Carga, Dedicación y Descanso */}
           <div>
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <Activity className="h-4 w-4 text-slate-700" />
+              <Activity className="h-4 w-4 text-unipamplona-rojo" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
                 2. Esfuerzo, Descanso y Sobrecarga
               </h2>
@@ -281,7 +365,7 @@ export default function Simulador() {
                   onChange={(e) =>
                     actualizarCampo('carga_percibida', parseFloat(e.target.value) || 1)
                   }
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 />
                 {erroresValidacion.carga_percibida && (
                   <p className="mt-1 text-xs text-amber-700">{erroresValidacion.carga_percibida}</p>
@@ -301,7 +385,7 @@ export default function Simulador() {
                   onChange={(e) =>
                     actualizarCampo('horas_estudio_semana', parseFloat(e.target.value) || 0)
                   }
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 />
                 {erroresValidacion.horas_estudio_semana && (
                   <p className="mt-1 text-xs text-amber-700">
@@ -322,7 +406,7 @@ export default function Simulador() {
                   max="24"
                   value={valores.horas_sueno}
                   onChange={(e) => actualizarCampo('horas_sueno', parseFloat(e.target.value) || 0)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 />
                 {erroresValidacion.horas_sueno && (
                   <p className="mt-1 text-xs text-amber-700">{erroresValidacion.horas_sueno}</p>
@@ -334,7 +418,7 @@ export default function Simulador() {
           {/* Dimensión 3: Apoyo y Situación Laboral */}
           <div>
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <HeartHandshake className="h-4 w-4 text-slate-700" />
+              <HeartHandshake className="h-4 w-4 text-unipamplona-rojo" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-700">
                 3. Entorno Sociofamiliar y Compromiso
               </h2>
@@ -351,7 +435,7 @@ export default function Simulador() {
                   onChange={(e) =>
                     actualizarCampo('apoyo_economico_familiar', parseInt(e.target.value))
                   }
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 >
                   <option value={1}>Sí (Cuenta con apoyo)</option>
                   <option value={0}>No (Sin red de apoyo)</option>
@@ -366,7 +450,7 @@ export default function Simulador() {
                 <select
                   value={valores.trabajo_remunerado}
                   onChange={(e) => actualizarCampo('trabajo_remunerado', parseInt(e.target.value))}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 >
                   <option value={0}>No labora</option>
                   <option value={1}>Sí labora paralelamente</option>
@@ -381,7 +465,7 @@ export default function Simulador() {
                 <select
                   value={valores.intencion_seguir}
                   onChange={(e) => actualizarCampo('intencion_seguir', parseInt(e.target.value))}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-slate-500 focus:outline-none"
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-unipamplona-rojo focus:outline-none focus:ring-1 focus:ring-unipamplona-rojo"
                 >
                   <option value={1}>Firme (Desea graduarse)</option>
                   <option value={0}>En duda / Desmotivación</option>
@@ -404,7 +488,7 @@ export default function Simulador() {
             <button
               type="submit"
               disabled={cargando || hayErrores}
-              className="inline-flex items-center gap-2 rounded bg-slate-800 px-5 py-2 text-sm font-medium text-white shadow-xs transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded bg-unipamplona-rojo px-5 py-2 text-sm font-medium text-white shadow-xs transition hover:bg-unipamplona-rojo-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-unipamplona-dorado disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Calculator className="h-4 w-4" />
               <span>{cargando ? 'Calculando...' : 'Simular Riesgo de Deserción'}</span>
@@ -464,7 +548,7 @@ export default function Simulador() {
                   <div
                     className={`h-full transition-all duration-500 ${
                       resultado.nivel_riesgo === 'alto'
-                        ? 'bg-amber-700'
+                        ? 'bg-amber-600'
                         : resultado.nivel_riesgo === 'medio'
                         ? 'bg-slate-600'
                         : 'bg-emerald-600'
@@ -489,7 +573,7 @@ export default function Simulador() {
                 <div className="flex items-center gap-1.5 mb-2">
                   <TrendingUp className="h-4 w-4 text-slate-600" />
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                    Factores que Más Inciden en este Estudiante
+                    Factores que más pesan en esta estimación
                   </h3>
                 </div>
 
@@ -509,7 +593,7 @@ export default function Simulador() {
                         {/* Barra de peso relativo */}
                         <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
                           <div
-                            className="h-full bg-amber-700 rounded-full"
+                            className="h-full bg-amber-600 rounded-full"
                             style={{ width: `${Math.min(100, Math.max(5, fc.impacto_pct))}%` }}
                           />
                         </div>
@@ -524,7 +608,7 @@ export default function Simulador() {
               </div>
 
               <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-400">
-                Modelo: Bosque Aleatorio · Atribución de trayectoria en árbol
+                Modelo: Bosque Aleatorio · Universidad de Pamplona
               </div>
             </div>
           )}
@@ -532,6 +616,18 @@ export default function Simulador() {
           {/* Aviso ético permanente en el panel */}
           <AvisoEtico />
         </div>
+      </div>
+      </div>
+
+      {/* Contenido de Pestaña 2: Notas por Corte */}
+      <div
+        id="panel-notas"
+        role="tabpanel"
+        aria-labelledby="tab-notas"
+        hidden={tabActiva !== 'notas'}
+        className={tabActiva !== 'notas' ? 'hidden' : 'space-y-6'}
+      >
+        <NotasPorCorte />
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { obtenerMetricasModelos, formatearNombreModelo } from '../api/cliente'
+import { obtenerMetricasModelos, formatearNombreModelo, COLORES_TEMA } from '../api/cliente'
 import type { MetricasModelos, MetricasModeloDetalle } from '../api/cliente'
 import CargandoSpinner from '../components/CargandoSpinner'
 import ErrorCartel from '../components/ErrorCartel'
@@ -132,7 +132,7 @@ export default function Modelos() {
         </h1>
         <p className="text-sm text-slate-600 mt-1">
           Evaluación empírica mediante validación cruzada estratificada (5 pliegues) sobre el conjunto de
-          150 estudiantes de Enfermería.
+          150 estudiantes de Enfermería · Universidad de Pamplona.
         </p>
       </div>
 
@@ -144,7 +144,7 @@ export default function Modelos() {
             <h2 className="text-sm font-semibold text-amber-900">
               Marco de Validación con Datos Sintéticos
             </h2>
-            <p className="text-xs text-amber-800 leading-relaxed">
+            <p className="text-xs text-amber-900/90 leading-relaxed">
               Las métricas presentadas a continuación fueron calculadas rigurosamente sobre el dataset
               sintético generado para este semillero de investigación. Los valores cercanos o iguales al 100%
               responden a la consistencia controlada de los patrones sintéticos simulados; en entornos con datos
@@ -159,12 +159,12 @@ export default function Modelos() {
       <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-amber-100 p-2 text-amber-800">
+            <div className="rounded-lg bg-unipamplona-rojo-light p-2.5 text-unipamplona-rojo border border-unipamplona-rojo/20">
               <Award className="h-6 w-6" aria-hidden="true" />
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">
-                Modelo Seleccionado para Producción
+              <span className="text-xs font-semibold uppercase tracking-wider text-unipamplona-rojo">
+                Modelo Institucional Recomendado
               </span>
               <h2 className="text-lg font-semibold text-slate-800">
                 {formatearNombreModelo(mejor_modelo)}
@@ -200,30 +200,30 @@ export default function Modelos() {
               data={datosGrafico}
               margin={{ top: 20, right: 20, left: 0, bottom: 10 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={COLORES_TEMA.unipamplona.grid} />
               <XAxis
                 dataKey="metrica"
-                tick={{ fontSize: 11, fill: '#334155' }}
+                tick={{ fontSize: 11, fill: COLORES_TEMA.unipamplona.texto }}
                 interval={0}
               />
               <YAxis
                 domain={[85, 100]}
                 ticks={[85, 90, 95, 100]}
-                tick={{ fontSize: 11, fill: '#64748b' }}
+                tick={{ fontSize: 11, fill: COLORES_TEMA.unipamplona.textoSecundario }}
               />
               <Tooltip
                 formatter={(val: unknown) => [`${Number(val ?? 0).toFixed(1)}%`]}
                 contentStyle={{
-                  backgroundColor: '#ffffff',
-                  borderColor: '#e2e8f0',
+                  backgroundColor: COLORES_TEMA.unipamplona.blanco,
+                  borderColor: COLORES_TEMA.unipamplona.borde,
                   borderRadius: '0.375rem',
                   fontSize: '0.75rem',
                 }}
               />
               <Legend wrapperStyle={{ fontSize: '0.75rem', paddingTop: '10px' }} />
-              <Bar dataKey="Bosque Aleatorio" fill="#b45309" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Regresión Logística" fill="#475569" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Árbol de Decisión" fill="#94a3b8" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Bosque Aleatorio" fill={COLORES_TEMA.modelos.bosque} radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Regresión Logística" fill={COLORES_TEMA.modelos.regresion} radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Árbol de Decisión" fill={COLORES_TEMA.modelos.arbol} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -257,15 +257,15 @@ export default function Modelos() {
                 <tr
                   key={m.clave}
                   className={`hover:bg-slate-50/80 transition ${
-                    m.esMejor ? 'bg-amber-50/30 font-medium' : ''
+                    m.esMejor ? 'bg-unipamplona-rojo-light/40 font-medium' : ''
                   }`}
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <span className="text-slate-800 font-semibold">{m.nombre}</span>
                       {m.esMejor && (
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-300">
-                          Activo
+                        <span className="rounded-full bg-unipamplona-rojo-light px-2 py-0.5 text-[10px] font-semibold text-unipamplona-rojo border border-unipamplona-rojo/30">
+                          Recomendado
                         </span>
                       )}
                     </div>

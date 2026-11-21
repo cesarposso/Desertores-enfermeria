@@ -2,9 +2,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-riesgo-alto: #b45309;    /* amber-700 */
-  --color-riesgo-medio: #475569;   /* slate-600 */
-  --color-riesgo-bajo: #059669;    /* emerald-600 */
+  /* Identidad Institucional Universidad de Pamplona */
+  --color-unipamplona-rojo: #ad3333;
+  --color-unipamplona-rojo-dark: #8f2424;
+  --color-unipamplona-rojo-light: #fdf2f2;
+  --color-unipamplona-dorado: #ebb21c;
+  --color-unipamplona-superficie: #f0f0f0;
+  --color-unipamplona-texto: #1f2937;
+
+  /* Niveles de Riesgo (colores suaves: ámbar cálido, pizarra, esmeralda; nunca rojo institucional) */
+  --color-riesgo-alto: #c25e00;    /* Ámbar profundo / ocre, distinguible del rojo institucional #ad3333 */
+  --color-riesgo-medio: #475569;   /* Azul pizarra */
+  --color-riesgo-bajo: #059669;    /* Esmeralda */
+
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-heading: 'Source Serif 4', Georgia, serif;
 }

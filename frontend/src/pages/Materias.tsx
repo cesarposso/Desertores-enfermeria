@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { obtenerCargaMaterias } from '../api/cliente'
+import { obtenerCargaMaterias, COLORES_TEMA } from '../api/cliente'
 import type { MateriaCarga } from '../api/cliente'
 import CargandoSpinner from '../components/CargandoSpinner'
 import ErrorCartel from '../components/ErrorCartel'
@@ -53,13 +53,13 @@ export default function Materias() {
     )
   }
 
-  // Prepara datos para el gráfico
+  // Prepara datos para el gráfico usando colores centralizados
   const datosGrafico = materias.map((m) => ({
     asignatura: m.asignatura,
     carga: m.carga_promedio,
     semestre: m.semestre,
     tasaRiesgo: m.tasa_riesgo_pct,
-    color: m.carga_promedio >= 4.2 ? '#b45309' : '#475569', // ámbar si es sobrecarga alta, pizarra si es moderada
+    color: m.carga_promedio >= 4.2 ? COLORES_TEMA.riesgo.alto : COLORES_TEMA.riesgo.medio,
   }))
 
   const materiaMayorCarga = materias[0]
@@ -75,7 +75,7 @@ export default function Materias() {
         <h1 className="text-2xl font-semibold text-slate-800">Carga Académica por Materia</h1>
         <p className="text-sm text-slate-600 mt-1">
           Diagnóstico de sobrecarga académica percibida (escala 1.0 a 5.0) y su relación con la tasa de
-          alerta preventiva en el plan de estudios de Enfermería.
+          alerta preventiva en el plan de estudios de Enfermería · Universidad de Pamplona.
         </p>
       </div>
 
@@ -86,7 +86,7 @@ export default function Materias() {
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Materia de Mayor Sobrecarga
             </span>
-            <BookOpen className="h-4 w-4 text-amber-700" aria-hidden="true" />
+            <BookOpen className="h-4 w-4 text-amber-800" aria-hidden="true" />
           </div>
           <p className="mt-2 text-base font-semibold text-slate-800 truncate" title={materiaMayorCarga?.asignatura}>
             {materiaMayorCarga ? materiaMayorCarga.asignatura : '—'}
@@ -117,10 +117,10 @@ export default function Materias() {
 
         <div className="rounded-lg border border-slate-200 bg-white p-4 sm:col-span-2 lg:col-span-1">
           <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-            Criterio de Sobrecarga
+            Criterio Pedagógico
           </span>
           <p className="mt-2 text-xs text-slate-600 leading-relaxed">
-            Asignaturas con promedio ≥ <strong className="tabular-nums text-slate-800">4.20</strong> (en color ámbar)
+            Asignaturas con promedio ≥ <strong className="tabular-nums text-slate-800">4.20</strong> (en ámbar cálido)
             ameritan revisión formativa de talleres, tiempos de entrega y carga de estudio autónomo.
           </p>
         </div>
@@ -144,17 +144,17 @@ export default function Materias() {
               layout="vertical"
               margin={{ top: 10, right: 30, left: 30, bottom: 10 }}
             >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={COLORES_TEMA.unipamplona.grid} />
               <XAxis
                 type="number"
                 domain={[0, 5]}
                 ticks={[1, 2, 3, 4, 5]}
-                tick={{ fontSize: 12, fill: '#64748b' }}
+                tick={{ fontSize: 12, fill: COLORES_TEMA.unipamplona.textoSecundario }}
               />
               <YAxis
                 type="category"
                 dataKey="asignatura"
-                tick={{ fontSize: 12, fill: '#334155' }}
+                tick={{ fontSize: 12, fill: COLORES_TEMA.unipamplona.texto }}
                 width={190}
               />
               <Tooltip
@@ -163,8 +163,8 @@ export default function Materias() {
                   'Carga percibida',
                 ]}
                 contentStyle={{
-                  backgroundColor: '#ffffff',
-                  borderColor: '#e2e8f0',
+                  backgroundColor: COLORES_TEMA.unipamplona.blanco,
+                  borderColor: COLORES_TEMA.unipamplona.borde,
                   borderRadius: '0.375rem',
                   fontSize: '0.75rem',
                 }}
@@ -180,11 +180,17 @@ export default function Materias() {
 
         <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-3 text-xs text-slate-600">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-sm bg-amber-700 shrink-0" />
+            <span
+              className="h-3 w-3 rounded-sm shrink-0"
+              style={{ backgroundColor: COLORES_TEMA.riesgo.alto }}
+            />
             <span>Sobrecarga alta (≥ 4.20)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-sm bg-slate-600 shrink-0" />
+            <span
+              className="h-3 w-3 rounded-sm shrink-0"
+              style={{ backgroundColor: COLORES_TEMA.riesgo.medio }}
+            />
             <span>Carga moderada (&lt; 4.20)</span>
           </div>
         </div>

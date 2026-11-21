@@ -4,6 +4,7 @@ import {
   obtenerCargaMaterias,
   obtenerMetricasModelos,
   formatearNombreModelo,
+  COLORES_TEMA,
 } from '../api/cliente'
 import type {
   EstudianteRiesgo,
@@ -95,25 +96,25 @@ export default function Resumen() {
 
   const f1Display = f1MejorModelo !== undefined ? `${(f1MejorModelo * 100).toFixed(1)}%` : '—'
 
-  // Datos para gráfico de barras breve
+  // Datos para gráfico de barras breve usando colores centralizados del tema
   const datosGrafico = [
     {
       categoria: 'Acompañamiento prioritario',
       cantidad: totalAlto,
       porcentaje: pctAlto,
-      color: '#b45309', // amber-700
+      color: COLORES_TEMA.riesgo.alto, // Ámbar suave, distinguible del rojo institucional
     },
     {
       categoria: 'Seguimiento preventivo',
       cantidad: totalMedio,
       porcentaje: totalEstudiantes > 0 ? ((totalMedio / totalEstudiantes) * 100).toFixed(1) : '0',
-      color: '#475569', // slate-600
+      color: COLORES_TEMA.riesgo.medio, // Azul pizarra
     },
     {
       categoria: 'Situación estable',
       cantidad: totalBajo,
       porcentaje: totalEstudiantes > 0 ? ((totalBajo / totalEstudiantes) * 100).toFixed(1) : '0',
-      color: '#059669', // emerald-600
+      color: COLORES_TEMA.riesgo.bajo, // Esmeralda
     },
   ]
 
@@ -124,7 +125,7 @@ export default function Resumen() {
         <h1 className="text-2xl font-semibold text-slate-800">Resumen General</h1>
         <p className="text-sm text-slate-600 mt-1">
           Estado consolidado de alerta temprana y sobrecarga académica percibida para el programa de
-          Enfermería.
+          Enfermería · Universidad de Pamplona.
         </p>
       </div>
 
@@ -133,18 +134,18 @@ export default function Resumen() {
         {/* Tarjeta 1: Acompañamiento Prioritario */}
         <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-amber-800">
+            <span className="text-xs font-medium uppercase tracking-wider text-amber-900">
               Acompañamiento Prioritario
             </span>
-            <AlertTriangle className="h-4 w-4 text-amber-700" aria-hidden="true" />
+            <AlertTriangle className="h-4 w-4 text-amber-800" aria-hidden="true" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-semibold tabular-nums text-amber-900">{totalAlto}</span>
-            <span className="text-xs text-amber-700 tabular-nums">
+            <span className="text-xs text-amber-800 tabular-nums">
               de {totalEstudiantes} ({pctAlto}%)
             </span>
           </div>
-          <p className="mt-2 text-xs text-amber-800 leading-relaxed">
+          <p className="mt-2 text-xs text-amber-900/90 leading-relaxed">
             Estudiantes con mayor probabilidad orientadora de requerir apoyo formativo.
           </p>
         </div>
@@ -179,7 +180,7 @@ export default function Resumen() {
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Modelo Predictor Activo
             </span>
-            <Brain className="h-4 w-4 text-slate-600" aria-hidden="true" />
+            <Brain className="h-4 w-4 text-unipamplona-rojo" aria-hidden="true" />
           </div>
           <div className="mt-2">
             <p className="text-sm font-semibold text-slate-800 leading-snug">
@@ -199,7 +200,7 @@ export default function Resumen() {
             <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
               Gestión de Tutorías
             </span>
-            <CalendarCheck className="h-4 w-4 text-slate-600" aria-hidden="true" />
+            <CalendarCheck className="h-4 w-4 text-emerald-700" aria-hidden="true" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-semibold tabular-nums text-slate-800">{totalCitados}</span>
@@ -229,11 +230,15 @@ export default function Resumen() {
               layout="vertical"
               margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
             >
-              <XAxis type="number" tick={{ fontSize: 12, fill: '#64748b' }} domain={[0, 'dataMax + 10']} />
+              <XAxis
+                type="number"
+                tick={{ fontSize: 12, fill: COLORES_TEMA.unipamplona.textoSecundario }}
+                domain={[0, 'dataMax + 10']}
+              />
               <YAxis
                 type="category"
                 dataKey="categoria"
-                tick={{ fontSize: 12, fill: '#334155' }}
+                tick={{ fontSize: 12, fill: COLORES_TEMA.unipamplona.texto }}
                 width={180}
               />
               <Tooltip
@@ -242,8 +247,8 @@ export default function Resumen() {
                   'Cantidad',
                 ]}
                 contentStyle={{
-                  backgroundColor: '#ffffff',
-                  borderColor: '#e2e8f0',
+                  backgroundColor: COLORES_TEMA.unipamplona.blanco,
+                  borderColor: COLORES_TEMA.unipamplona.borde,
                   borderRadius: '0.375rem',
                   fontSize: '0.75rem',
                 }}
@@ -259,20 +264,29 @@ export default function Resumen() {
 
         <div className="mt-4 grid grid-cols-1 gap-2 border-t border-slate-100 pt-3 sm:grid-cols-3 text-xs">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-sm bg-amber-700 shrink-0" />
+            <span
+              className="h-3 w-3 rounded-sm shrink-0"
+              style={{ backgroundColor: COLORES_TEMA.riesgo.alto }}
+            />
             <span className="text-slate-600">
               Acompañamiento prioritario: <strong className="tabular-nums text-slate-800">{totalAlto}</strong> ({pctAlto}%)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-sm bg-slate-600 shrink-0" />
+            <span
+              className="h-3 w-3 rounded-sm shrink-0"
+              style={{ backgroundColor: COLORES_TEMA.riesgo.medio }}
+            />
             <span className="text-slate-600">
               Seguimiento preventivo: <strong className="tabular-nums text-slate-800">{totalMedio}</strong> (
               {totalEstudiantes > 0 ? ((totalMedio / totalEstudiantes) * 100).toFixed(1) : 0}%)
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-sm bg-emerald-600 shrink-0" />
+            <span
+              className="h-3 w-3 rounded-sm shrink-0"
+              style={{ backgroundColor: COLORES_TEMA.riesgo.bajo }}
+            />
             <span className="text-slate-600">
               Situación estable: <strong className="tabular-nums text-slate-800">{totalBajo}</strong> (
               {totalEstudiantes > 0 ? ((totalBajo / totalEstudiantes) * 100).toFixed(1) : 0}%)

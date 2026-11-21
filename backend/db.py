@@ -21,7 +21,8 @@ def init_db(
     db_path: str,
     seed_records: Optional[List[Dict[str, Any]]] = None,
     dataset_path: Optional[str] = None,
-    model_bundle_path: Optional[str] = None
+    model_bundle_path: Optional[str] = None,
+    force_reseed: bool = False
 ) -> None:
     """Inicializa la tabla estudiantes_riesgo y realiza el sembrado inicial si está vacía."""
     os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
@@ -43,6 +44,10 @@ def init_db(
             );
         """)
         conn.commit()
+
+        if force_reseed:
+            cursor.execute("DELETE FROM estudiantes_riesgo;")
+            conn.commit()
 
         # Si se pasan registros directos (e.g. en tests)
         if seed_records:

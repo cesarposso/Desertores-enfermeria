@@ -1,0 +1,56 @@
+[
+  {
+    "asignatura": "Fisiología Humana",
+    "semestre": 2,
+    "estudiantes_matriculados": 25,
+    "carga_promedio": 4.44,
+    "tasa_riesgo_pct": 48.0,
+    "asistencia_promedio_pct": 78.0,
+    "horas_estudio_promedio": 11.5
+  },
+  {
+    "asignatura": "Farmacología Clínica",
+    "semestre": 4,
+    "estudiantes_matriculados": 25,
+    "carga_promedio": 4.36,
+    "tasa_riesgo_pct": 32.0,
+    "asistencia_promedio_pct": 84.8,
+    "horas_estudio_promedio": 12.5
+  },
+  {
+    "asignatura": "Anatomía Humana",
+    "semestre": 1,
+    "estudiantes_matriculados": 25,
+    "carga_promedio": 4.24,
+    "tasa_riesgo_pct": 36.0,
+    "asistencia_promedio_pct": 82.5,
+    "horas_estudio_promedio": 11.4
+  },
+  {
+    "asignatura": "Bioquímica Médica",
+    "semestre": 2,
+    "estudiantes_matriculados": 25,
+    "carga_promedio": 4.13,
+    "tasa_riesgo_pct": 44.0,
+    "asistencia_promedio_pct": 78.8,
+    "horas_estudio_promedio": 10.2
+  },
+  {
+    "asignatura": "Microbiología y Parasitología",
+    "semestre": 3,
+    "estudiantes_matriculados": 25,
+    "carga_promedio": 3.84,
+    "tasa_riesgo_pct": 28.0,
+    "asistencia_promedio_pct": 86.2,
+    "horas_estudio_promedio": 14.9
+  },
+  {
+    "asignatura": "Cuidado Básico de Enfermería",
+    "semestre": 3,
+    "estudiantes_matriculados": 25,
+    "carga_promedio": 3.81,
+    "tasa_riesgo_pct": 48.0,
+    "asistencia_promedio_pct": 79.3,
+    "horas_estudio_promedio": 10.5
+  }
+]

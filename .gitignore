@@ -221,3 +221,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Proyecto
+*.sqlite
+node_modules/
+!frontend/src/lib/
+
+# Herramientas de IA (locales)
+.agent/
+.agents/
+.superpowers/
+.impeccable/
+
+PRODUCT.md
+DESIGN.md

@@ -9,23 +9,24 @@ export type NivelRiesgo = 'alto' | 'medio' | 'bajo'
 export type EstadoTutoria = 'pendiente' | 'citado'
 
 export interface FactorCritico {
-  variable: string
-  etiqueta: string
-  contribucion: number
-  valor: number | string
-  direccion: 'riesgo' | 'protector'
+  factor: string
+  peso_neto: number
+  impacto_pct: number
+  valor_actual: number
+  descripcion: string
 }
 
 export interface EstudianteRiesgo {
-  codigo: string
-  nombre: string
+  codigo_estudiante: string
   asignatura: string
   semestre: number
   probabilidad_riesgo: number
   nivel_riesgo: NivelRiesgo
+  factor_principal: string
+  factores_detalle: FactorCritico[]
   estado_tutoria: EstadoTutoria
   fecha_tutoria: string | null
-  factores_criticos: FactorCritico[]
+  actualizado_en?: string | null
 }
 
 export interface EstudiantesRiesgoResponse {
@@ -38,41 +39,48 @@ export interface EstudiantesRiesgoResponse {
 export interface MateriaCarga {
   asignatura: string
   semestre: number
-  n_estudiantes: number
-  carga_percibida_promedio: number
-  tasa_riesgo_alto: number
+  estudiantes_matriculados: number
+  carga_promedio: number
+  tasa_riesgo_pct: number
+  asistencia_promedio_pct: number
+  horas_estudio_promedio: number
 }
 
-export interface MetricasModelo {
-  accuracy: number
-  f1: number
-  precision: number
-  recall: number
-  roc_auc: number
+export interface MetricaValor {
+  mean: number
+  std: number
+}
+
+export interface MetricasModeloDetalle {
+  accuracy: MetricaValor
+  f1: MetricaValor
+  precision: MetricaValor
+  recall: MetricaValor
+  roc_auc: MetricaValor
 }
 
 export interface MetricasModelos {
   mejor_modelo: string
-  regresion_logistica: MetricasModelo
-  arbol_decision: MetricasModelo
-  bosque_aleatorio: MetricasModelo
+  regresion_logistica: MetricasModeloDetalle
+  arbol_decision: MetricasModeloDetalle
+  bosque_aleatorio: MetricasModeloDetalle
   datos_sinteticos: boolean
   aviso_etico: string
 }
 
 export interface SimuladorInput {
+  asignatura: string
   nota_primer_parcial: number
   promedio_acumulado_cortes: number
   asistencia_pct: number
-  repitente: 0 | 1
+  repitente: number
   semestre: number
   carga_percibida: number
   horas_estudio_semana: number
   horas_sueno: number
-  apoyo_economico_familiar: 0 | 1
-  trabajo_remunerado: 0 | 1
-  intencion_seguir: 0 | 1
-  asignatura: string
+  apoyo_economico_familiar: number
+  trabajo_remunerado: number
+  intencion_seguir: number
 }
 
 export interface SimuladorOutput {
@@ -158,7 +166,7 @@ export function nivelRiesgoClase(nivel: NivelRiesgo): string {
     medio: 'text-riesgo-medio bg-slate-100 border-slate-300',
     bajo: 'text-riesgo-bajo bg-emerald-50 border-emerald-300',
   }
-  return mapa[nivel]
+  return mapa[nivel] || 'text-slate-600 bg-slate-100 border-slate-300'
 }
 
 /** Etiqueta legible para el nivel de riesgo (no alarmista). */
@@ -168,5 +176,15 @@ export function nivelRiesgoEtiqueta(nivel: NivelRiesgo): string {
     medio: 'Seguimiento preventivo',
     bajo: 'Estable',
   }
-  return mapa[nivel]
+  return mapa[nivel] || nivel
+}
+
+/** Formateo amigable del nombre de modelo */
+export function formatearNombreModelo(modelo: string): string {
+  const mapa: Record<string, string> = {
+    bosque_aleatorio: 'Bosque Aleatorio (Random Forest)',
+    regresion_logistica: 'Regresión Logística',
+    arbol_decision: 'Árbol de Decisión',
+  }
+  return mapa[modelo] || modelo
 }

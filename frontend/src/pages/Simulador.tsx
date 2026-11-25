@@ -613,6 +613,94 @@ export default function Simulador() {
             </div>
           )}
 
+          {!cargando && resultado?.evaluacion_difusa && (
+            <div className="space-y-4 rounded-lg border border-teal-200 bg-white p-5 shadow-xs">
+              <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                <div>
+                  <h2 className="text-base font-semibold text-slate-800">
+                    Evaluación por Reglas Difusas
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Inferencia Mamdani · Conocimiento experto
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 rounded border px-2.5 py-0.5 text-xs font-semibold ${nivelRiesgoClase(
+                    resultado.evaluacion_difusa.nivel_riesgo,
+                  )}`}
+                >
+                  {nivelRiesgoEtiqueta(resultado.evaluacion_difusa.nivel_riesgo)}
+                </span>
+              </div>
+
+              <div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-slate-600 font-medium">
+                    Índice Orientador Difuso
+                  </span>
+                  <span className="text-2xl font-bold tabular-nums text-slate-900">
+                    {resultado.evaluacion_difusa.probabilidad_difusa.toFixed(1)}%
+                  </span>
+                </div>
+                <div className="mt-2 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-500 ${
+                      resultado.evaluacion_difusa.nivel_riesgo === 'alto'
+                        ? 'bg-amber-600'
+                        : resultado.evaluacion_difusa.nivel_riesgo === 'medio'
+                        ? 'bg-slate-600'
+                        : 'bg-emerald-600'
+                    }`}
+                    style={{
+                      width: `${Math.min(100, Math.max(0, resultado.evaluacion_difusa.probabilidad_difusa))}%`,
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-1">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
+                  Reglas SI–ENTONCES activadas
+                </h3>
+                {resultado.evaluacion_difusa.reglas_activas.length > 0 ? (
+                  <div className="space-y-2">
+                    {resultado.evaluacion_difusa.reglas_activas.map((regla) => (
+                      <div
+                        key={regla.id}
+                        className="rounded border border-slate-100 bg-slate-50/70 p-2.5 text-xs space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="rounded bg-teal-50 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-teal-800 border border-teal-200">
+                              {regla.id}
+                            </span>
+                            <span className="text-[11px] font-medium text-slate-600">
+                              {nivelRiesgoEtiqueta(regla.consecuente)}
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-semibold tabular-nums text-slate-700">
+                            α = {regla.activacion.toFixed(2)} ({Math.round(regla.activacion * 100)}%)
+                          </span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-teal-600"
+                            style={{ width: `${Math.min(100, Math.max(4, regla.activacion * 100))}%` }}
+                          />
+                        </div>
+                        <p className="text-slate-700 leading-relaxed">{regla.descripcion}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    Ninguna regla alcanzó un grado de activación significativo para este perfil.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Aviso ético permanente en el panel */}
           <AvisoEtico />
         </div>

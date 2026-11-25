@@ -64,6 +64,12 @@ def test_get_modelo_metricas():
     assert "accuracy" in res.bosque_aleatorio
     assert "f1" in res.bosque_aleatorio
     assert res.datos_sinteticos is True
+    assert res.logica_difusa is not None
+    for m in ("accuracy", "f1", "precision", "recall", "roc_auc"):
+        assert m in res.logica_difusa
+        assert 0.0 <= res.logica_difusa[m]["mean"] <= 1.0
+    assert res.logica_difusa["sin_entrenamiento"] is True
+    assert "umbral_preventivo_35" in res.logica_difusa
 
 def test_simular_riesgo_estudiante_tree_path():
     payload = SimuladorInputRequest(
@@ -85,3 +91,48 @@ def test_simular_riesgo_estudiante_tree_path():
     assert res.nivel_riesgo in ("alto", "medio")
     assert len(res.factores_criticos) >= 3
     assert res.datos_sinteticos is True
+
+
+def test_simular_riesgo_evaluacion_difusa_alto_y_bajo():
+    alto_payload = SimuladorInputRequest(
+        asignatura="Farmacología Clínica",
+        nota_primer_parcial=1.6,
+        promedio_acumulado_cortes=1.9,
+        asistencia_pct=52.0,
+        repitente=1,
+        semestre=3,
+        carga_percibida=4.8,
+        horas_estudio_semana=4.0,
+        horas_sueno=4.5,
+        apoyo_economico_familiar=0,
+        trabajo_remunerado=1,
+        intencion_seguir=0,
+    )
+    res_alto = simular_riesgo_estudiante(alto_payload)
+    assert res_alto.evaluacion_difusa is not None
+    assert 60.0 <= res_alto.evaluacion_difusa.probabilidad_difusa <= 100.0
+    assert res_alto.evaluacion_difusa.nivel_riesgo == "alto"
+    assert len(res_alto.evaluacion_difusa.reglas_activas) >= 1
+    acts_alto = [r.activacion for r in res_alto.evaluacion_difusa.reglas_activas]
+    assert all(0.0 < a <= 1.0 for a in acts_alto)
+    assert acts_alto == sorted(acts_alto, reverse=True)
+
+    bajo_payload = SimuladorInputRequest(
+        asignatura="Fisiología Humana",
+        nota_primer_parcial=4.5,
+        promedio_acumulado_cortes=4.6,
+        asistencia_pct=96.0,
+        repitente=0,
+        semestre=3,
+        carga_percibida=2.0,
+        horas_estudio_semana=20.0,
+        horas_sueno=8.0,
+        apoyo_economico_familiar=1,
+        trabajo_remunerado=0,
+        intencion_seguir=1,
+    )
+    res_bajo = simular_riesgo_estudiante(bajo_payload)
+    assert res_bajo.evaluacion_difusa is not None
+    assert 0.0 <= res_bajo.evaluacion_difusa.probabilidad_difusa < 35.0
+    assert res_bajo.evaluacion_difusa.nivel_riesgo == "bajo"
+    assert len(res_bajo.evaluacion_difusa.reglas_activas) >= 1

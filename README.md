@@ -64,10 +64,24 @@ Para evitar un problema artificialmente trivial (clasificadores con 100% F1 sin 
 
 ## 🧠 Modelos de Machine Learning y Explicabilidad
 
-Se comparan 3 modelos entrenados con **validación cruzada estratificada ($k=5$)**:
+Se comparan 3 modelos entrenados con **validación cruzada estratificada ($k=5$)** junto a un motor de **Lógica Difusa (Sistema de Inferencia Difusa tipo Mamdani)** basado en conocimiento experto (sin entrenamiento por pliegues, implementado en Python puro + NumPy en `backend/fuzzy_model.py`):
 - **Regresión Logística (`LogisticRegression`)**
 - **Árbol de Decisión (`DecisionTreeClassifier`)**
-- **Bosque Aleatorio (`RandomForestClassifier`)** *(Mejor modelo seleccionado)*
+- **Bosque Aleatorio (`RandomForestClassifier`)** *(Mejor modelo supervisado seleccionado)*
+- **Lógica Difusa (Mamdani, 9 reglas SI–ENTONCES)** *(Alternativa interpretable y sin entrenamiento para cohortes pequeñas, con defuzzificación por centroide en $[0, 1]$)*
+
+### Comparativa de Desempeño sobre `dataset_sintetico.csv` ($n=150$)
+
+| Enfoque / Modelo | Evaluación | Sensibilidad (Recall) | Precisión | F1-Score | ROC-AUC | Exactitud | Marcados |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Bosque Aleatorio (ML)** | 5-fold CV | 90.9% | 85.2% | 87.6% | 89.3% | 85.3% | — |
+| **Regresión Logística (ML)** | 5-fold CV | 88.6% | 84.5% | 86.2% | 90.8% | 84.0% | — |
+| **Árbol de Decisión (ML)** | 5-fold CV | 79.4% | 79.1% | 78.0% | 82.7% | 75.3% | — |
+| **Lógica Difusa Mamdani ($\ge 50\%$)** | Directa (sin pliegues) | 75.6% | 90.3% | 82.3% | 90.8% | 81.3% | — |
+| **Lógica Difusa (umbral preventivo $\ge 35\%$)** | Directa (sin pliegues) | 91.9% | 83.2% | 87.3% | 90.8% | 84.7% | 95 / 150 |
+| **Regla simple (`prom < 3.0` o `asist < 75%`)** | Directa (umbral fijo) | 68.6% | 88.1% | 77.1% | — | 76.7% | 67 / 150 |
+
+> La evaluación con el **umbral preventivo de la plataforma ($\ge 35\%$)** alinea el sistema difuso con los niveles de seguimiento preventivo y acompañamiento prioritario, alcanzando una sensibilidad del **91.9%** sin requerir datos históricos de entrenamiento.
 
 ### Cálculo de Factores que más pesan (Interpretabilidad Local)
 Para el **Bosque Aleatorio (Random Forest)**, se implementó el método de **Descomposición de Trayectorias de Decisión (Tree Decision Path Attribution)**:
@@ -87,8 +101,8 @@ El backend expone 5 endpoints principales:
 - `GET /api/estudiantes/riesgo`: Retorna los 150 estudiantes priorizados de mayor a menor probabilidad orientadora, con filtros opcionales por `asignatura`, `nivel_riesgo` (`alto`, `medio`, `bajo`) y `estado_tutoria` (`pendiente`, `citado`).
 - `PATCH /api/estudiantes/{codigo}/tutoria`: Actualiza el estado (`pendiente` o `citado`) y fecha de citación a tutoría en SQLite desde el drawer lateral del panel.
 - `GET /api/materias/carga`: Retorna la sobrecarga académica promedio y tasas de riesgo por asignatura de enfermería.
-- `GET /api/modelo/metricas`: Retorna la comparación de métricas ($k=5$ CV) de los 3 modelos.
-- `POST /api/predecir`: Simulador individual interactivo que recibe las 11 variables y retorna la probabilidad estimada con el desglose de factores críticos.
+- `GET /api/modelo/metricas`: Retorna la comparación de métricas ($k=5$ CV) de los 3 modelos de ML junto a las métricas de evaluación directa de `logica_difusa`.
+- `POST /api/predecir`: Simulador individual interactivo que recibe las 11 variables y retorna la probabilidad estimada con el desglose de factores críticos y el bloque opcional `evaluacion_difusa` (índice Mamdani, nivel y reglas SI–ENTONCES activadas).
 
 ---
 

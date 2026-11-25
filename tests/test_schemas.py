@@ -3,6 +3,8 @@ from pydantic import ValidationError
 from backend.schemas import (
     SimuladorInputRequest,
     SimuladorOutputResponse,
+    EvaluacionDifusa,
+    ReglaDifusaActiva,
     ActualizarTutoriaRequest,
     EstudiantesRiesgoResponse,
     MateriaCargaItem,
@@ -69,3 +71,34 @@ def test_actualizar_tutoria_schema():
 
     with pytest.raises(ValidationError):
         ActualizarTutoriaRequest(estado="expulsado") # Not allowed
+
+
+def test_simulador_output_retrocompatible_y_con_difusa():
+    sin_difusa = SimuladorOutputResponse(
+        probabilidad_riesgo=42.0,
+        nivel_riesgo="medio",
+        mensaje_orientador="Seguimiento preventivo sugerido.",
+    )
+    assert sin_difusa.evaluacion_difusa is None
+
+    con_difusa = SimuladorOutputResponse(
+        probabilidad_riesgo=68.0,
+        nivel_riesgo="alto",
+        mensaje_orientador="Acompañamiento prioritario sugerido.",
+        evaluacion_difusa=EvaluacionDifusa(
+            probabilidad_difusa=72.5,
+            nivel_riesgo="alto",
+            reglas_activas=[
+                ReglaDifusaActiva(
+                    id="R1",
+                    descripcion="SI el rendimiento académico es bajo Y la asignatura se cursa como repitente, ENTONCES se recomienda acompañamiento prioritario.",
+                    activacion=0.85,
+                    consecuente="alto",
+                )
+            ],
+        ),
+    )
+    assert con_difusa.evaluacion_difusa is not None
+    assert con_difusa.evaluacion_difusa.probabilidad_difusa == 72.5
+    assert con_difusa.evaluacion_difusa.nivel_riesgo == "alto"
+    assert len(con_difusa.evaluacion_difusa.reglas_activas) == 1

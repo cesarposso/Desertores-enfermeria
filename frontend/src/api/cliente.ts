@@ -27,6 +27,7 @@ export const COLORES_TEMA = {
     bosque: '#AD3333',         // Rojo institucional para el modelo recomendado
     regresion: '#475569',      // Pizarra
     arbol: '#94A3B8',          // Gris neutro
+    difuso: '#0D9488',         // Verde azulado académico para conocimiento experto
   },
 } as const
 
@@ -78,12 +79,25 @@ export interface MetricaValor {
   std: number
 }
 
+export interface UmbralPreventivoDifuso {
+  umbral: number
+  recall: number
+  precision: number
+  f1: number
+  accuracy: number
+  estudiantes_marcados: number
+}
+
 export interface MetricasModeloDetalle {
   accuracy: MetricaValor
   f1: MetricaValor
   precision: MetricaValor
   recall: MetricaValor
   roc_auc: MetricaValor
+  tipo?: string
+  sin_entrenamiento?: boolean
+  nota_metodologica?: string
+  umbral_preventivo_35?: UmbralPreventivoDifuso
 }
 
 export interface MetricasModelos {
@@ -91,6 +105,7 @@ export interface MetricasModelos {
   regresion_logistica: MetricasModeloDetalle
   arbol_decision: MetricasModeloDetalle
   bosque_aleatorio: MetricasModeloDetalle
+  logica_difusa?: MetricasModeloDetalle | null
   datos_sinteticos: boolean
   aviso_etico: string
 }
@@ -110,11 +125,25 @@ export interface SimuladorInput {
   intencion_seguir: number
 }
 
+export interface ReglaDifusaActiva {
+  id: string
+  descripcion: string
+  activacion: number
+  consecuente: NivelRiesgo
+}
+
+export interface EvaluacionDifusa {
+  probabilidad_difusa: number
+  nivel_riesgo: NivelRiesgo
+  reglas_activas: ReglaDifusaActiva[]
+}
+
 export interface SimuladorOutput {
   probabilidad_riesgo: number
   nivel_riesgo: NivelRiesgo
   mensaje_orientador: string
   factores_criticos: FactorCritico[]
+  evaluacion_difusa?: EvaluacionDifusa | null
   datos_sinteticos: boolean
   aviso_etico: string
 }
@@ -212,6 +241,7 @@ export function formatearNombreModelo(modelo: string): string {
     bosque_aleatorio: 'Bosque Aleatorio (Random Forest)',
     regresion_logistica: 'Regresión Logística',
     arbol_decision: 'Árbol de Decisión',
+    logica_difusa: 'Lógica Difusa (Mamdani)',
   }
   return mapa[modelo] || modelo
 }

@@ -23,6 +23,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 
+from backend.fuzzy_model import predecir_dataset_difuso
+
 
 ASIGNATURAS_ENFERMERIA = [
     {"nombre": "Anatomía Humana", "semestre": 1, "carga_base": 4.5},
@@ -163,6 +165,49 @@ def generar_dataset_sintetico(n: int = 150, seed: int = 42) -> pd.DataFrame:
     return df
 
 
+def evaluar_regla_simple(df: pd.DataFrame) -> Dict[str, Any]:
+    """Evalúa la línea base por umbrales fijos (promedio < 3.0 o asistencia < 75%)."""
+    y = df["desercion_riesgo"]
+    y_pred = ((df["promedio_acumulado_cortes"] < 3.0) | (df["asistencia_pct"] < 75.0)).astype(int)
+    return {
+        "recall": round(float(recall_score(y, y_pred, zero_division=0)), 4),
+        "precision": round(float(precision_score(y, y_pred, zero_division=0)), 4),
+        "f1": round(float(f1_score(y, y_pred, zero_division=0)), 4),
+        "accuracy": round(float(accuracy_score(y, y_pred)), 4),
+        "estudiantes_marcados": int(y_pred.sum()),
+    }
+
+
+def evaluar_logica_difusa(df: pd.DataFrame) -> Dict[str, Any]:
+    """Evalúa el motor difuso Mamdani sin entrenamiento (umbral estándar 0.5 y preventivo 0.35)."""
+    y = df["desercion_riesgo"]
+    y_prob, y_pred_50 = predecir_dataset_difuso(df, umbral=0.5)
+    y_pred_35 = (y_prob >= 0.35).astype(int)
+
+    return {
+        "accuracy": {"mean": round(float(accuracy_score(y, y_pred_50)), 4), "std": 0.0},
+        "f1": {"mean": round(float(f1_score(y, y_pred_50, zero_division=0)), 4), "std": 0.0},
+        "precision": {"mean": round(float(precision_score(y, y_pred_50, zero_division=0)), 4), "std": 0.0},
+        "recall": {"mean": round(float(recall_score(y, y_pred_50, zero_division=0)), 4), "std": 0.0},
+        "roc_auc": {"mean": round(float(roc_auc_score(y, y_prob)), 4), "std": 0.0},
+        "tipo": "conocimiento_experto",
+        "sin_entrenamiento": True,
+        "nota_metodologica": (
+            "Sistema de inferencia difusa Mamdani basado en conocimiento experto "
+            "(sin entrenamiento por pliegues); evaluado directamente sobre el conjunto completo, "
+            "ideal para muestras pequeñas."
+        ),
+        "umbral_preventivo_35": {
+            "umbral": 0.35,
+            "recall": round(float(recall_score(y, y_pred_35, zero_division=0)), 4),
+            "precision": round(float(precision_score(y, y_pred_35, zero_division=0)), 4),
+            "f1": round(float(f1_score(y, y_pred_35, zero_division=0)), 4),
+            "accuracy": round(float(accuracy_score(y, y_pred_35)), 4),
+            "estudiantes_marcados": int(y_pred_35.sum()),
+        },
+    }
+
+
 def entrenar_y_evaluar_modelos(df: pd.DataFrame, output_dir: str = "backend/data") -> Dict[str, Any]:
     """Entrena 3 modelos con validación cruzada estratificada k=5 y guarda los artefactos."""
     os.makedirs(output_dir, exist_ok=True)
@@ -206,11 +251,12 @@ def entrenar_y_evaluar_modelos(df: pd.DataFrame, output_dir: str = "backend/data
             "roc_auc": {"mean": round(float(np.mean(auc_list)), 4), "std": round(float(np.std(auc_list)), 4)},
         }
 
-    # Seleccionar mejor modelo según F1
-    mejor_nombre = max(metricas_resumen.keys(), key=lambda k: metricas_resumen[k]["f1"]["mean"])
+    # Seleccionar mejor modelo supervisado según F1 (antes de añadir evaluación difusa)
+    mejor_nombre = max(modelos.keys(), key=lambda k: metricas_resumen[k]["f1"]["mean"])
     mejor_modelo = modelos[mejor_nombre]
     mejor_modelo.fit(X, y)
-    
+
+    metricas_resumen["logica_difusa"] = evaluar_logica_difusa(df)
     metricas_resumen["mejor_modelo"] = mejor_nombre
     
     # 1. Guardar dataset CSV
@@ -259,6 +305,24 @@ if __name__ == "__main__":
     print(f"Mejor modelo: {resultados['mejor_modelo']}")
     print(f"F1-Score medio: {resultados[resultados['mejor_modelo']]['f1']['mean']:.4f}")
     print(f"AUC-ROC medio: {resultados[resultados['mejor_modelo']]['roc_auc']['mean']:.4f}")
+    dif = resultados["logica_difusa"]
+    u35 = dif["umbral_preventivo_35"]
+    regla = evaluar_regla_simple(df_sintetico)
+    print(
+        f"Lógica Difusa (>=50%): Recall={dif['recall']['mean']:.4f}, "
+        f"Prec={dif['precision']['mean']:.4f}, F1={dif['f1']['mean']:.4f}, "
+        f"AUC={dif['roc_auc']['mean']:.4f}, Acc={dif['accuracy']['mean']:.4f}"
+    )
+    print(
+        f"Lógica Difusa (>=35%): Recall={u35['recall']:.4f}, "
+        f"Prec={u35['precision']:.4f}, F1={u35['f1']:.4f}, "
+        f"Marcados={u35['estudiantes_marcados']}/{len(df_sintetico)}"
+    )
+    print(
+        f"Regla simple (<3.0 o <75%): Recall={regla['recall']:.4f}, "
+        f"Prec={regla['precision']:.4f}, F1={regla['f1']:.4f}, "
+        f"Marcados={regla['estudiantes_marcados']}/{len(df_sintetico)}"
+    )
     
     # Re-sembrar la base de datos SQLite con los nuevos estudiantes y predicciones
     from backend.db import init_db

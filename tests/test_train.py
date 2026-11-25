@@ -35,14 +35,34 @@ def test_entrenar_y_evaluar_modelos_y_explicabilidad(tmp_path):
     assert "regresion_logistica" in resultados
     assert "arbol_decision" in resultados
     assert "bosque_aleatorio" in resultados
+    assert "logica_difusa" in resultados
     assert "mejor_modelo" in resultados
-    
+    assert resultados["mejor_modelo"] in (
+        "regresion_logistica",
+        "arbol_decision",
+        "bosque_aleatorio",
+    )
+
     for modelo in ["regresion_logistica", "arbol_decision", "bosque_aleatorio"]:
         metricas = resultados[modelo]
         for m in ["accuracy", "f1", "precision", "recall", "roc_auc"]:
             assert "mean" in metricas[m]
             assert "std" in metricas[m]
             assert 0.0 <= metricas[m]["mean"] <= 1.0
+
+    difusa = resultados["logica_difusa"]
+    for m in ["accuracy", "f1", "precision", "recall", "roc_auc"]:
+        assert 0.0 <= difusa[m]["mean"] <= 1.0
+        assert difusa[m]["std"] == 0.0
+    assert difusa["sin_entrenamiento"] is True
+    assert difusa["tipo"] == "conocimiento_experto"
+    assert isinstance(difusa["nota_metodologica"], str) and difusa["nota_metodologica"]
+
+    u35 = difusa["umbral_preventivo_35"]
+    assert u35["umbral"] == 0.35
+    for m in ["recall", "precision", "f1", "accuracy"]:
+        assert 0.0 <= u35[m] <= 1.0
+    assert 0 <= u35["estudiantes_marcados"] <= len(df)
 
     assert os.path.exists(tmp_path / "dataset_sintetico.csv")
     assert os.path.exists(tmp_path / "metricas_modelos.json")

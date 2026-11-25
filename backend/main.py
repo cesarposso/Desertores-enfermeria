@@ -16,6 +16,7 @@ import pandas as pd
 from backend.schemas import (
     SimuladorInputRequest,
     SimuladorOutputResponse,
+    EvaluacionDifusa,
     ActualizarTutoriaRequest,
     EstudianteRiesgoItem,
     EstudiantesRiesgoResponse,
@@ -25,6 +26,7 @@ from backend.schemas import (
 )
 from backend.db import init_db, get_estudiantes_riesgo, actualizar_tutoria
 from backend.explainability import calcular_explicabilidad_local
+from backend.fuzzy_model import evaluar_estudiante_difuso
 
 
 DB_PATH = os.path.join("backend", "data", "database.sqlite")
@@ -158,6 +160,7 @@ def consultar_metricas_modelos():
         regresion_logistica=metricas.get("regresion_logistica", {}),
         arbol_decision=metricas.get("arbol_decision", {}),
         bosque_aleatorio=metricas.get("bosque_aleatorio", {}),
+        logica_difusa=metricas.get("logica_difusa"),
         datos_sinteticos=True,
         aviso_etico=AVISO_SINTETICO
     )
@@ -193,12 +196,18 @@ def simular_riesgo_estudiante(payload: SimuladorInputRequest):
         mensaje = "Situación académica estable. Mantener acompañamiento ordinario de la asignatura."
 
     factores = calcular_explicabilidad_local(model, row_df, feature_names, base_prob)
+    res_difuso = evaluar_estudiante_difuso(data_dict)
 
     return SimuladorOutputResponse(
         probabilidad_riesgo=prob_riesgo,
         nivel_riesgo=nivel,
         mensaje_orientador=mensaje,
         factores_criticos=factores,
+        evaluacion_difusa=EvaluacionDifusa(
+            probabilidad_difusa=res_difuso["probabilidad_difusa"],
+            nivel_riesgo=res_difuso["nivel_riesgo"],
+            reglas_activas=res_difuso["reglas_activas"],
+        ),
         datos_sinteticos=True,
         aviso_etico=AVISO_SINTETICO
     )

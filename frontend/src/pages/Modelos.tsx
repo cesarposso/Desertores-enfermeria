@@ -51,7 +51,7 @@ export default function Modelos() {
     )
   }
 
-  const { mejor_modelo, regresion_logistica, arbol_decision, bosque_aleatorio } = metricas
+  const { mejor_modelo, regresion_logistica, arbol_decision, bosque_aleatorio, logica_difusa } = metricas
 
   // Modelos formateados para tabla
   const listaModelos: Array<{
@@ -60,6 +60,7 @@ export default function Modelos() {
     descripcion: string
     detalle: MetricasModeloDetalle
     esMejor: boolean
+    esExperto?: boolean
   }> = [
     {
       clave: 'bosque_aleatorio',
@@ -82,6 +83,19 @@ export default function Modelos() {
       detalle: arbol_decision,
       esMejor: mejor_modelo === 'arbol_decision',
     },
+    ...(logica_difusa
+      ? [
+          {
+            clave: 'logica_difusa',
+            nombre: 'Lógica Difusa (Mamdani)',
+            descripcion:
+              'Sistema de 9 reglas pedagógicas SI–ENTONCES basado en conocimiento experto (evaluación directa sin pliegues ni entrenamiento).',
+            detalle: logica_difusa,
+            esMejor: false,
+            esExperto: true,
+          },
+        ]
+      : []),
   ]
 
   // Formato para gráfico comparativo (agrupado por métrica)
@@ -91,35 +105,41 @@ export default function Modelos() {
       'Bosque Aleatorio': Number((bosque_aleatorio.recall.mean * 100).toFixed(1)),
       'Regresión Logística': Number((regresion_logistica.recall.mean * 100).toFixed(1)),
       'Árbol de Decisión': Number((arbol_decision.recall.mean * 100).toFixed(1)),
+      ...(logica_difusa ? { 'Lógica Difusa': Number((logica_difusa.recall.mean * 100).toFixed(1)) } : {}),
     },
     {
       metrica: 'Precisión',
       'Bosque Aleatorio': Number((bosque_aleatorio.precision.mean * 100).toFixed(1)),
       'Regresión Logística': Number((regresion_logistica.precision.mean * 100).toFixed(1)),
       'Árbol de Decisión': Number((arbol_decision.precision.mean * 100).toFixed(1)),
+      ...(logica_difusa ? { 'Lógica Difusa': Number((logica_difusa.precision.mean * 100).toFixed(1)) } : {}),
     },
     {
       metrica: 'F1-Score',
       'Bosque Aleatorio': Number((bosque_aleatorio.f1.mean * 100).toFixed(1)),
       'Regresión Logística': Number((regresion_logistica.f1.mean * 100).toFixed(1)),
       'Árbol de Decisión': Number((arbol_decision.f1.mean * 100).toFixed(1)),
+      ...(logica_difusa ? { 'Lógica Difusa': Number((logica_difusa.f1.mean * 100).toFixed(1)) } : {}),
     },
     {
       metrica: 'AUC-ROC',
       'Bosque Aleatorio': Number((bosque_aleatorio.roc_auc.mean * 100).toFixed(1)),
       'Regresión Logística': Number((regresion_logistica.roc_auc.mean * 100).toFixed(1)),
       'Árbol de Decisión': Number((arbol_decision.roc_auc.mean * 100).toFixed(1)),
+      ...(logica_difusa ? { 'Lógica Difusa': Number((logica_difusa.roc_auc.mean * 100).toFixed(1)) } : {}),
     },
     {
       metrica: 'Exactitud (Accuracy)',
       'Bosque Aleatorio': Number((bosque_aleatorio.accuracy.mean * 100).toFixed(1)),
       'Regresión Logística': Number((regresion_logistica.accuracy.mean * 100).toFixed(1)),
       'Árbol de Decisión': Number((arbol_decision.accuracy.mean * 100).toFixed(1)),
+      ...(logica_difusa ? { 'Lógica Difusa': Number((logica_difusa.accuracy.mean * 100).toFixed(1)) } : {}),
     },
   ]
 
-  const formatearM = (m?: { mean: number; std: number }) => {
+  const formatearM = (m?: { mean: number; std: number }, sinEntrenamiento?: boolean) => {
     if (!m) return '—'
+    if (sinEntrenamiento) return `${(m.mean * 100).toFixed(1)}%`
     return `${(m.mean * 100).toFixed(1)}% ± ${(m.std * 100).toFixed(1)}%`
   }
 
@@ -207,8 +227,8 @@ export default function Modelos() {
                 interval={0}
               />
               <YAxis
-                domain={[85, 100]}
-                ticks={[85, 90, 95, 100]}
+                domain={[0, 100]}
+                ticks={[0, 20, 40, 60, 80, 100]}
                 tick={{ fontSize: 11, fill: COLORES_TEMA.unipamplona.textoSecundario }}
               />
               <Tooltip
@@ -224,6 +244,9 @@ export default function Modelos() {
               <Bar dataKey="Bosque Aleatorio" fill={COLORES_TEMA.modelos.bosque} radius={[3, 3, 0, 0]} />
               <Bar dataKey="Regresión Logística" fill={COLORES_TEMA.modelos.regresion} radius={[3, 3, 0, 0]} />
               <Bar dataKey="Árbol de Decisión" fill={COLORES_TEMA.modelos.arbol} radius={[3, 3, 0, 0]} />
+              {logica_difusa && (
+                <Bar dataKey="Lógica Difusa" fill={COLORES_TEMA.modelos.difuso} radius={[3, 3, 0, 0]} />
+              )}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -261,36 +284,62 @@ export default function Modelos() {
                   }`}
                 >
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="text-slate-800 font-semibold">{m.nombre}</span>
                       {m.esMejor && (
                         <span className="rounded-full bg-unipamplona-rojo-light px-2 py-0.5 text-[10px] font-semibold text-unipamplona-rojo border border-unipamplona-rojo/30">
                           Recomendado
                         </span>
                       )}
+                      {m.esExperto && (
+                        <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-800 border border-teal-200">
+                          Conocimiento experto
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5 max-w-md">{m.descripcion}</p>
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-700">
-                    {formatearM(m.detalle.recall)}
+                    {formatearM(m.detalle.recall, m.detalle.sin_entrenamiento)}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-700">
-                    {formatearM(m.detalle.precision)}
+                    {formatearM(m.detalle.precision, m.detalle.sin_entrenamiento)}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-900 font-semibold">
-                    {formatearM(m.detalle.f1)}
+                    {formatearM(m.detalle.f1, m.detalle.sin_entrenamiento)}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-700">
-                    {formatearM(m.detalle.roc_auc)}
+                    {formatearM(m.detalle.roc_auc, m.detalle.sin_entrenamiento)}
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums text-slate-700">
-                    {formatearM(m.detalle.accuracy)}
+                    {formatearM(m.detalle.accuracy, m.detalle.sin_entrenamiento)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        {logica_difusa && (
+          <div className="mt-4 rounded-md border border-teal-200 bg-teal-50/60 p-3.5 text-xs text-teal-950 leading-relaxed">
+            <p className="font-semibold text-teal-900">
+              ¿Por qué incluir Lógica Difusa para cohortes pequeñas?
+            </p>
+            <p className="mt-1 text-teal-900/90">
+              A diferencia de los modelos de Machine Learning supervisados, el motor difuso Mamdani no requiere
+              entrenamiento por pliegues ni grandes volúmenes históricos: traduce directamente el criterio pedagógico
+              en reglas SI–ENTONCES auditables, evitando el sobreajuste cuando el número de estudiantes es reducido.
+              {logica_difusa.umbral_preventivo_35 && (
+                <span className="block mt-1 tabular-nums">
+                  Con el umbral preventivo institucional (≥ 35%), alcanza{' '}
+                  <strong>{(logica_difusa.umbral_preventivo_35.recall * 100).toFixed(1)}%</strong> de sensibilidad y{' '}
+                  <strong>{(logica_difusa.umbral_preventivo_35.f1 * 100).toFixed(1)}%</strong> de F1-Score
+                  ({logica_difusa.umbral_preventivo_35.estudiantes_marcados} estudiantes priorizados).
+                </span>
+              )}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Aviso ético permanente */}

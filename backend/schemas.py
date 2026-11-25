@@ -34,11 +34,28 @@ class SimuladorInputRequest(BaseModel):
     intencion_seguir: int = Field(..., ge=0, le=1, description="Intención firme de continuar la carrera (0: No, 1: Sí)")
 
 
+class ReglaDifusaActiva(BaseModel):
+    id: str = Field(..., description="Identificador de la regla difusa (R1-R9)")
+    descripcion: str = Field(..., description="Regla pedagógica SI–ENTONCES en lenguaje de acompañamiento")
+    activacion: float = Field(..., ge=0.0, le=1.0, description="Grado de activación α en [0, 1]")
+    consecuente: Literal["bajo", "medio", "alto"] = Field(..., description="Nivel consecuente de la regla")
+
+
+class EvaluacionDifusa(BaseModel):
+    probabilidad_difusa: float = Field(..., ge=0.0, le=100.0, description="Índice difuso orientador (0 a 100%)")
+    nivel_riesgo: Literal["bajo", "medio", "alto"] = Field(..., description="Nivel equivalente al sistema")
+    reglas_activas: List[ReglaDifusaActiva] = Field(default_factory=list, description="Reglas activadas ordenadas por α")
+
+
 class SimuladorOutputResponse(BaseModel):
     probabilidad_riesgo: float = Field(..., description="Probabilidad orientadora estimada (0 a 100%)")
     nivel_riesgo: str = Field(..., description="Nivel: alto (Acompañamiento prioritario), medio (Seguimiento preventivo), bajo (Estable)")
     mensaje_orientador: str = Field(..., description="Recomendación pedagógica sugerida")
     factores_criticos: List[FactorCritico] = Field(default_factory=list, description="Top factores de mayor impacto")
+    evaluacion_difusa: Optional[EvaluacionDifusa] = Field(
+        default=None,
+        description="Evaluación complementaria mediante Sistema de Inferencia Difusa Mamdani",
+    )
     datos_sinteticos: bool = Field(default=True, description="Indica origen de datos sintéticos")
     aviso_etico: str = Field(default=AVISO_SINTETICO, description="Aviso de confidencialidad y propósito orientador")
 
@@ -83,5 +100,6 @@ class MetricasModelosResponse(BaseModel):
     regresion_logistica: Dict[str, Any]
     arbol_decision: Dict[str, Any]
     bosque_aleatorio: Dict[str, Any]
+    logica_difusa: Optional[Dict[str, Any]] = None
     datos_sinteticos: bool = True
     aviso_etico: str = AVISO_SINTETICO

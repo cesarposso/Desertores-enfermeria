@@ -22,6 +22,10 @@ export const COLORES_TEMA = {
     alto: '#C25E00',    // Ámbar profundo / ocre (nunca rojo institucional #AD3333)
     medio: '#475569',   // Azul pizarra
     bajo: '#059669',    // Esmeralda
+    prioritarioVelocimetro: '#D96B43',
+    preventivoVelocimetro: '#D97706',
+    estableVelocimetro: '#059669',
+    inactivoVelocimetro: '#E5E7EB',
   },
   modelos: {
     bosque: '#AD3333',         // Rojo institucional para el modelo recomendado
@@ -218,11 +222,14 @@ export async function simularRiesgo(input: SimuladorInput): Promise<SimuladorOut
  *  Nunca incluye clases rojas institucionales para no confundir alerta con marca. */
 export function nivelRiesgoClase(nivel: NivelRiesgo): string {
   const mapa: Record<NivelRiesgo, string> = {
-    alto: 'text-amber-900 bg-amber-50 border-amber-300',
-    medio: 'text-slate-700 bg-slate-100 border-slate-300',
-    bajo: 'text-emerald-800 bg-emerald-50 border-emerald-300',
+    alto: 'text-amber-900 bg-amber-50 border-amber-300 dark:text-orange-200 dark:bg-orange-500/15 dark:border-orange-400/30',
+    medio: 'text-slate-700 bg-slate-100 border-slate-300 dark:text-amber-200 dark:bg-amber-500/15 dark:border-amber-400/30',
+    bajo: 'text-emerald-800 bg-emerald-50 border-emerald-300 dark:text-emerald-200 dark:bg-emerald-500/15 dark:border-emerald-400/30',
   }
-  return mapa[nivel] || 'text-slate-700 bg-slate-100 border-slate-300'
+  return (
+    mapa[nivel] ||
+    'text-slate-700 bg-slate-100 border-slate-300 dark:text-zinc-200 dark:bg-zinc-800 dark:border-zinc-700'
+  )
 }
 
 /** Etiqueta legible para el nivel de riesgo (no alarmista). */

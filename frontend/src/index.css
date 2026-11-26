@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,600;0,8..60,700;1,8..60,600&display=swap');
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
   /* Identidad Institucional Universidad de Pamplona */
@@ -10,19 +11,222 @@
   --color-unipamplona-superficie: #f0f0f0;
   --color-unipamplona-texto: #1f2937;
 
-  /* Niveles de Riesgo (colores suaves: ámbar cálido, pizarra, esmeralda; nunca rojo institucional) */
-  --color-riesgo-alto: #c25e00;    /* Ámbar profundo / ocre, distinguible del rojo institucional #ad3333 */
-  --color-riesgo-medio: #475569;   /* Azul pizarra */
-  --color-riesgo-bajo: #059669;    /* Esmeralda */
+  /* Superficies Bento y Lienzo */
+  --color-lienzo: #f4f4f5;
+  --color-carbon: #18181b;
+
+  /* Niveles de Riesgo (colores suaves: nunca rojo institucional #ad3333) */
+  --color-riesgo-alto: #c25e00;
+  --color-riesgo-medio: #475569;
+  --color-riesgo-bajo: #059669;
+  --color-riesgo-prioritario: #d96b43;
+  --color-riesgo-preventivo: #d97706;
+  --color-riesgo-estable: #059669;
+  --color-riesgo-inactivo: #e5e7eb;
 
   --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
   --font-heading: 'Source Serif 4', Georgia, serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --surface-canvas: #f4f4f5;
+  --surface-card: #ffffff;
+  --surface-card-border: rgb(0 0 0 / 0.05);
+  --surface-card-shadow:
+    0 1px 2px rgb(0 0 0 / 0.03),
+    0 10px 28px -16px rgb(0 0 0 / 0.08);
+  --surface-card-dark: #18181b;
+  --surface-card-dark-border: rgb(255 255 255 / 0.08);
+  --text-primary: #1f2937;
+
+  --gauge-inactive: #e5e7eb;
+  --chart-grid: #f1f5f9;
+  --chart-axis: #52525b;
+  --chart-refline: #52525b;
+  --chart-reflabel: #18181b;
+  --chart-stripe-bg: #f4f4f5;
+  --chart-stripe-line: #d4d4d8;
+  --chart-bar-stroke: #d4d4d8;
+  --chart-cursor: rgba(24, 24, 27, 0.04);
+}
+
+html.dark {
+  color-scheme: dark;
+  --surface-canvas: #0e0e10;
+  --surface-card: #18181b;
+  --surface-card-border: rgb(255 255 255 / 0.1);
+  --surface-card-shadow: 0 12px 32px -18px rgb(0 0 0 / 0.65);
+  --surface-card-dark: #121215;
+  --surface-card-dark-border: rgb(255 255 255 / 0.15);
+  --text-primary: #f4f4f5;
+
+  --gauge-inactive: #27272a;
+  --chart-grid: #27272a;
+  --chart-axis: #a1a1aa;
+  --chart-refline: #a1a1aa;
+  --chart-reflabel: #f4f4f5;
+  --chart-stripe-bg: #27272a;
+  --chart-stripe-line: #3f3f46;
+  --chart-bar-stroke: #3f3f46;
+  --chart-cursor: rgba(255, 255, 255, 0.06);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+body {
+  overscroll-behavior: none;
+  background-color: var(--surface-canvas);
+  color: var(--text-primary);
+}
+
+::selection {
+  background-color: #fdf2f2;
+  color: #8f2424;
+}
+
+html.dark ::selection {
+  background-color: rgb(173 51 51 / 0.35);
+  color: #fef2f2;
+}
+
+input,
+textarea,
+select {
+  caret-color: #ad3333;
+}
+
+@media (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+button,
+a,
+[role='button'] {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Barras de desplazamiento discretas alineadas al lienzo */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d8 transparent;
+}
+
+html.dark * {
+  scrollbar-color: #3f3f46 transparent;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
 }
 
-table, .tabular-nums, [data-metric] {
+table,
+.tabular-nums,
+[data-metric] {
   font-variant-numeric: tabular-nums;
+}
+
+/* Superficies Bento */
+.bento-card {
+  background-color: var(--surface-card);
+  border-radius: 28px;
+  border: 1px solid var(--surface-card-border);
+  box-shadow: var(--surface-card-shadow);
+}
+
+.bento-card-dark {
+  background-color: var(--surface-card-dark);
+  background-image: radial-gradient(
+    circle at 85% 10%,
+    rgb(255 255 255 / 0.07) 0%,
+    transparent 55%
+  );
+  border-radius: 28px;
+  border: 1px solid var(--surface-card-dark-border);
+  box-shadow: 0 12px 30px -16px rgb(0 0 0 / 0.45);
+}
+
+/* View Transitions circulares de cambio de tema */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Respuesta táctil física en botones y píldoras */
+.pressable {
+  transition:
+    transform 140ms var(--ease-out),
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.pressable:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.hover-lift {
+  transition:
+    transform 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out),
+    background-color 150ms ease;
+}
+
+.hover-scale {
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 4px 12px -4px rgb(0 0 0 / 0.07),
+      0 14px 32px -18px rgb(0 0 0 / 0.12);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pressable:active:not(:disabled),
+  .hover-lift:hover,
+  .hover-scale:hover {
+    transform: none;
+  }
 }
